@@ -1,0 +1,21 @@
+# Ignore Backend API
+PRN232_G3_Hotel_Management_API_v1910/
+
+# Ignore Flutter build & tool artifacts
+**/android/.gradle/
+**/android/local.properties
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
