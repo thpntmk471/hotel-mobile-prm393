@@ -11,3 +11,4 @@ abstract class RoomRepository {
 
   Future<void> updateHousekeepingStatus(int roomId, String newStatus);
 }
+

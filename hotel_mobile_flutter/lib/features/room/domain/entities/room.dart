@@ -22,3 +22,4 @@ class Room {
   bool get isClean => housekeepingStatus == 'Sạch';
   bool get isActive => operationalStatus == 'Hoạt động';
 }
+
