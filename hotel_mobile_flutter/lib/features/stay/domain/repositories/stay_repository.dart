@@ -15,3 +15,4 @@ abstract class StayRepository {
     required String paymentMethod, // Tiền mặt, Chuyển khoản / VNPay, Thẻ tín dụng
   });
 }
+

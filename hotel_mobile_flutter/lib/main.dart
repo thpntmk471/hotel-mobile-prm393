@@ -12,6 +12,10 @@ import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/pages/home_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/hotel_service/data/datasources/hotel_service_remote_datasource.dart';
+import 'features/hotel_service/data/repositories/hotel_service_repository_impl.dart';
+import 'features/hotel_service/domain/repositories/hotel_service_repository.dart';
+import 'features/hotel_service/presentation/providers/hotel_service_provider.dart';
 import 'features/reservation/data/datasources/reservation_remote_datasource.dart';
 import 'features/reservation/data/repositories/reservation_repository_impl.dart';
 import 'features/reservation/domain/repositories/reservation_repository.dart';
@@ -54,6 +58,11 @@ void main() async {
   final stayRemoteDataSource = StayRemoteDataSourceImpl(dioClient.dio);
   final stayRepository = StayRepositoryImpl(stayRemoteDataSource);
 
+  final hotelServiceRemoteDataSource =
+      HotelServiceRemoteDataSourceImpl(dioClient.dio);
+  final hotelServiceRepository =
+      HotelServiceRepositoryImpl(hotelServiceRemoteDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -63,6 +72,7 @@ void main() async {
         Provider<RoomRepository>.value(value: roomRepository),
         Provider<ReservationRepository>.value(value: reservationRepository),
         Provider<StayRepository>.value(value: stayRepository),
+        Provider<HotelServiceRepository>.value(value: hotelServiceRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
         ),
@@ -75,6 +85,10 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => StayProvider(stayRepository: stayRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HotelServiceProvider(
+              serviceRepository: hotelServiceRepository),
         ),
       ],
       child: const HotelManagementApp(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../hotel_service/presentation/pages/service_catalog_page.dart';
 import '../../../reservation/presentation/pages/reservation_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
 import '../../../stay/presentation/pages/stay_list_page.dart';
@@ -138,6 +139,19 @@ class HomePage extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const StayListPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+
+            _buildActionCard(
+              context,
+              icon: Icons.room_service,
+              title: 'Dịch vụ khách sạn',
+              subtitle: 'Menu F&B buffet, giặt ủi, spa massage và gọi phục vụ tận phòng.',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ServiceCatalogPage()),
                 );
               },
             ),

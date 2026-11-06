@@ -60,3 +60,4 @@ class StayRepositoryImpl implements StayRepository {
     await remoteDataSource.checkOut(stayId, paymentMethod);
   }
 }
+

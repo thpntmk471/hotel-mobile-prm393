@@ -49,3 +49,4 @@ class Stay {
 
   bool get isActive => status == 'Active' || status == 'Đang lưu trú';
 }
+
