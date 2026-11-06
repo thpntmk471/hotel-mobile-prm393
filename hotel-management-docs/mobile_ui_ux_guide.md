@@ -156,3 +156,4 @@ graph TD
 1. **Luôn có Loading & Error Feedback:** Khi bấm nút hoặc tải danh sách, bắt buộc hiện `CircularProgressIndicator` hoặc Shimmer. Nếu lỗi mạng phải hiện `SnackBar` hoặc Dialog thân thiện, không để màn hình trắng xóa.
 2. **Xác nhận thao tác nguy hiểm (Confirmation Dialog):** Khi Hủy phòng hoặc Check-out trả phòng, phải có hộp thoại *"Bạn có chắc chắn muốn hủy đặt phòng này?"*.
 3. **Format tiền tệ & thời gian chuẩn Việt Nam:** Luôn hiển thị `500.000 VNĐ` (thay vì `500000`) và ngày dạng `dd/MM/yyyy`.
+
