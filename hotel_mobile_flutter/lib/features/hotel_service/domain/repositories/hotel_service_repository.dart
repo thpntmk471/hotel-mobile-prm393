@@ -10,3 +10,4 @@ abstract class HotelServiceRepository {
     required int quantity,
   });
 }
+

@@ -43,3 +43,4 @@ class ServiceUsageOrder {
     required this.status,
   });
 }
+

@@ -54,3 +54,4 @@ class HotelServiceRepositoryImpl implements HotelServiceRepository {
     return model.toEntity();
   }
 }
+
