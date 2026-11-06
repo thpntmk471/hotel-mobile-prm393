@@ -43,63 +43,6 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.primaryLight,
-              child: Text(
-                (session?.fullName ?? 'U').substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  session?.fullName ?? 'Lễ tân Demo',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Text(
-                  'PRM Grand Luxury Hotel',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.statusActiveBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '● ${session?.role ?? "Receptionist"}',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: AppColors.statusActiveText,
-              ),
-            ),
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.wait([
@@ -111,379 +54,524 @@ class HomePage extends StatelessWidget {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Băng chuyền / Lưới chỉ số vận hành (KPI Metrics)
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.35,
-                children: [
-                  StatMetricCard(
-                    icon: Icons.hotel_outlined,
-                    title: 'Phòng sạch sẵn sàng',
-                    value: '$cleanRooms/$totalRooms',
-                    subtitle: 'Phòng',
-                    iconColor: AppColors.statusActiveText,
-                    iconBgColor: AppColors.statusActiveBg,
-                    onTap: () => onNavigateTab?.call(1),
-                  ),
-                  StatMetricCard(
-                    icon: Icons.pie_chart_outline,
-                    title: 'Tỷ lệ lấp đầy',
-                    value: '$occupancyRate%',
-                    subtitle: '$activeStaysCount phòng ở',
-                    iconColor: const Color(0xFF2563EB),
-                    iconBgColor: const Color(0xFFDBEAFE),
-                    onTap: () => onNavigateTab?.call(3),
-                  ),
-                  StatMetricCard(
-                    icon: Icons.calendar_today_outlined,
-                    title: 'Đơn chờ check-in',
-                    value: '$confirmedBookingsCount đơn',
-                    subtitle: 'Hôm nay',
-                    iconColor: const Color(0xFFD97706),
-                    iconBgColor: const Color(0xFFFEF3C7),
-                    onTap: () => onNavigateTab?.call(2),
-                  ),
-                  StatMetricCard(
-                    icon: Icons.cleaning_services_outlined,
-                    title: 'Cần dọn phòng',
-                    value: '$dirtyRooms phòng',
-                    subtitle: '$pendingTasksCount việc chờ',
-                    iconColor: const Color(0xFFDC2626),
-                    iconBgColor: const Color(0xFFFEE2E2),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const TaskListPage()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Dòng Phím tắt thao tác nhanh (Quick Actions)
-              const Text(
-                'THAO TÁC NHANH',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 0.8,
+              // 1. Header Đẳng Cấp 5 Sao với Emerald Gradient
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
                 ),
-              ),
-              const SizedBox(height: 10),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildQuickAction(
-                    context,
-                    icon: Icons.add_circle_outline,
-                    label: 'Đặt phòng',
-                    color: AppColors.primary,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const BookingPage()),
-                      );
-                    },
-                  ),
-                  _buildQuickAction(
-                    context,
-                    icon: Icons.login_rounded,
-                    label: 'Nhận phòng',
-                    color: const Color(0xFF2563EB),
-                    onTap: () => onNavigateTab?.call(2),
-                  ),
-                  _buildQuickAction(
-                    context,
-                    icon: Icons.room_service_outlined,
-                    label: 'Gọi dịch vụ',
-                    color: const Color(0xFF7C3AED),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ServiceCatalogPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildQuickAction(
-                    context,
-                    icon: Icons.cleaning_services_outlined,
-                    label: 'Dọn phòng',
-                    color: const Color(0xFF059669),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const TaskListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Mục: Khách đang lưu trú (Recent Active Stays)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'PHÒNG ĐANG LƯU TRÚ',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textSecondary,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => onNavigateTab?.call(3),
-                    child: const Text(
-                      'Xem tất cả →',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              if (stayProvider.stays.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Hiện tại chưa có khách lưu trú.',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                    ),
-                  ),
-                )
-              else
-                ...stayProvider.stays.take(3).map((stay) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: Material(
-                      color: Theme.of(context).cardColor,
-                      clipBehavior: Clip.antiAlias,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: AppColors.border),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => StayDetailPage(
-                                stay: stay,
-                                onCheckOutSuccess: () {
-                                  stayProvider.checkOutAndPay(stay.id, 'Tiền mặt');
-                                },
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  MediaQuery.of(context).padding.top + 16,
+                  16,
+                  24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Text(
+                              '★★★★★',
+                              style: TextStyle(
+                                color: Color(0xFFD4AF37),
+                                fontSize: 13,
+                                letterSpacing: 2,
                               ),
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
+                            SizedBox(width: 8),
+                            Text(
+                              'PRM GRAND HOTEL & RESORTS',
+                              style: TextStyle(
+                                color: Color(0xFFE2E8F0),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            '● ${session?.role ?? "Receptionist"}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFD4AF37),
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.white,
+                            child: Text(
+                              (session?.fullName ?? 'U')
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    stay.roomNumber.replaceAll('DEV-', ''),
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
+                              Text(
+                                'Xin chào, ${session?.fullName ?? "Lễ tân Demo"}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      stay.guestName,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${stay.roomTypeName} • ${stay.stayCode}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.statusActiveBg,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  stay.status,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.statusActiveText,
-                                  ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Hôm nay, Thứ Sáu • Ca Sáng (07:00 - 15:00)',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  );
-                }),
-              const SizedBox(height: 20),
+                  ],
+                ),
+              ),
 
-              // Mục: Tác vụ buồng phòng gần nhất
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'NHIỆM VỤ BUỒNG PHÒNG',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textSecondary,
-                      letterSpacing: 0.8,
+              // 2. Nội dung phần thân
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Lưới 4 Thẻ KPI Vận hành
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.35,
+                      children: [
+                        StatMetricCard(
+                          icon: Icons.hotel_outlined,
+                          title: 'Phòng sạch sẵn sàng',
+                          value: '$cleanRooms/$totalRooms',
+                          subtitle: 'Phòng',
+                          iconColor: AppColors.statusActiveText,
+                          iconBgColor: AppColors.statusActiveBg,
+                          onTap: () => onNavigateTab?.call(1),
+                        ),
+                        StatMetricCard(
+                          icon: Icons.pie_chart_outline,
+                          title: 'Tỷ lệ lấp đầy',
+                          value: '$occupancyRate%',
+                          subtitle: '$activeStaysCount phòng ở',
+                          iconColor: const Color(0xFF2563EB),
+                          iconBgColor: const Color(0xFFDBEAFE),
+                          onTap: () => onNavigateTab?.call(3),
+                        ),
+                        StatMetricCard(
+                          icon: Icons.calendar_today_outlined,
+                          title: 'Đơn chờ check-in',
+                          value: '$confirmedBookingsCount đơn',
+                          subtitle: 'Hôm nay',
+                          iconColor: const Color(0xFFD97706),
+                          iconBgColor: const Color(0xFFFEF3C7),
+                          onTap: () => onNavigateTab?.call(2),
+                        ),
+                        StatMetricCard(
+                          icon: Icons.cleaning_services_outlined,
+                          title: 'Cần dọn phòng',
+                          value: '$dirtyRooms phòng',
+                          subtitle: '$pendingTasksCount việc chờ',
+                          iconColor: const Color(0xFFDC2626),
+                          iconBgColor: const Color(0xFFFEE2E2),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const TaskListPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const TaskListPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Quản lý việc →',
+                    const SizedBox(height: 20),
+
+                    // Phím tắt thao tác nhanh
+                    const Text(
+                      'THAO TÁC NHANH',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.8,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-              if (taskProvider.tasks.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Tất cả phòng đã được dọn sạch!',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.add_circle,
+                          label: 'Đặt phòng',
+                          color: AppColors.primary,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const BookingPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.login_rounded,
+                          label: 'Nhận phòng',
+                          color: const Color(0xFF2563EB),
+                          onTap: () => onNavigateTab?.call(2),
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.room_service_outlined,
+                          label: 'Gọi dịch vụ',
+                          color: const Color(0xFF7C3AED),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ServiceCatalogPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.cleaning_services_outlined,
+                          label: 'Dọn phòng',
+                          color: const Color(0xFF059669),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const TaskListPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                )
-              else
-                ...taskProvider.tasks.take(2).map((t) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: Material(
-                      color: Theme.of(context).cardColor,
-                      clipBehavior: Clip.antiAlias,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: AppColors.border),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            Icon(
-                              t.isDone
-                                  ? Icons.check_circle_outline
-                                  : t.isInProgress
-                                      ? Icons.hourglass_top
-                                      : Icons.pending_actions,
-                              color: t.isDone
-                                  ? AppColors.statusActiveText
-                                  : AppColors.statusWarningText,
-                              size: 24,
+                    const SizedBox(height: 24),
+
+                    // Mục: Khách đang lưu trú
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'PHÒNG ĐANG LƯU TRÚ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondary,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => onNavigateTab?.call(3),
+                          child: const Text(
+                            'Xem tất cả →',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${t.roomNumber} - ${t.taskType}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    if (stayProvider.stays.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Hiện tại chưa có khách lưu trú.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      ...stayProvider.stays.take(3).map((stay) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: Material(
+                            color: Theme.of(context).cardColor,
+                            clipBehavior: Clip.antiAlias,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => StayDetailPage(
+                                      stay: stay,
+                                      onCheckOutSuccess: () {
+                                        stayProvider.checkOutAndPay(
+                                          stay.id,
+                                          'Tiền mặt',
+                                        );
+                                      },
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryLight,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          stay.roomNumber.replaceAll('DEV-', ''),
+                                          style: const TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            stay.guestName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${stay.roomTypeName} • ${stay.stayCode}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.statusActiveBg,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        stay.status,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.statusActiveText,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    const SizedBox(height: 20),
+
+                    // Mục: Tác vụ buồng phòng gần nhất
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'NHIỆM VỤ BUỒNG PHÒNG',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondary,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const TaskListPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Quản lý việc →',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    if (taskProvider.tasks.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Tất cả phòng đã được dọn sạch!',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      ...taskProvider.tasks.take(2).map((t) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: Material(
+                            color: Theme.of(context).cardColor,
+                            clipBehavior: Clip.antiAlias,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    t.isDone
+                                        ? Icons.check_circle_outline
+                                        : t.isInProgress
+                                            ? Icons.hourglass_top
+                                            : Icons.pending_actions,
+                                        color: t.isDone
+                                            ? AppColors.statusActiveText
+                                            : AppColors.statusWarningText,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${t.roomNumber} - ${t.taskType}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Ưu tiên: ${t.priority} • ${t.assignedStaff ?? "Chưa phân công"}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Text(
-                                    'Ưu tiên: ${t.priority} • ${t.assignedStaff ?? "Chưa phân công"}',
-                                    style: const TextStyle(
+                                    t.status,
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.bold,
+                                      color: t.isDone
+                                          ? AppColors.statusActiveText
+                                          : AppColors.statusWarningText,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Text(
-                              t.status,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: t.isDone
-                                    ? AppColors.statusActiveText
-                                    : AppColors.statusWarningText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              const SizedBox(height: 24),
+                          ),
+                        );
+                      }),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

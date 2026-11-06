@@ -27,6 +27,24 @@ class AppColors {
   static const Color statusGrayBg = Color(0xFFF3F4F6);
   static const Color statusGrayText = Color(0xFF4B5563);
 
+  // Luxury Accents (5-Star Hotel Identity)
+  static const Color gold = Color(0xFFC5A059);
+  static const Color goldLight = Color(0xFFFDF8E7);
+  static const Color goldDark = Color(0xFF9E7D3B);
+
+  // Gradient
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF1B5E4F), Color(0xFF113D33)],
+  );
+
+  static const LinearGradient goldGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFD4AF37), Color(0xFFAA8020)],
+  );
+
   static const Color error = Color(0xFFDC2626);
 }
 

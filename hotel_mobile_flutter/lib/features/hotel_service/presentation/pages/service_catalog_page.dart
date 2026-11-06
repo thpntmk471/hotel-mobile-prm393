@@ -35,6 +35,19 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     return '${amount.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} VNĐ';
   }
 
+  String _getServiceImage(String category) {
+    switch (category) {
+      case 'F&B':
+        return 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=300&auto=format&fit=crop&q=80';
+      case 'Spa':
+        return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=300&auto=format&fit=crop&q=80';
+      case 'Laundry':
+        return 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=300&auto=format&fit=crop&q=80';
+      default:
+        return 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=300&auto=format&fit=crop&q=80';
+    }
+  }
+
   void _showOrderDialog(BuildContext context, HotelServiceItem service) {
     int quantity = 1;
     String roomNumber = 'DEV-101';
@@ -246,55 +259,75 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                     final s = provider.services[index];
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      clipBehavior: Clip.antiAlias,
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              s.category == 'F&B'
-                                  ? Icons.restaurant
-                                  : s.category == 'Spa'
-                                      ? Icons.spa
-                                      : s.category == 'Laundry'
-                                          ? Icons.local_laundry_service
-                                          : Icons.directions_car,
-                              color: AppColors.primary,
+                          ClipRRect(
+                            child: Image.network(
+                              _getServiceImage(s.category),
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 80,
+                                height: 80,
+                                color: AppColors.primaryLight,
+                                child: const Icon(Icons.room_service, color: AppColors.primary),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 14),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                const SizedBox(height: 2),
-                                Text(s.description, maxLines: 2, overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                                const SizedBox(height: 6),
-                                Text('${_formatCurrency(s.price)} / ${s.unit}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13)),
-                              ],
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    s.description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${_formatCurrency(s.price)} / ${s.unit}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => _showOrderDialog(context, s),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: ElevatedButton(
+                              onPressed: () => _showOrderDialog(context, s),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                elevation: 0,
+                              ),
+                              child: const Text('Gọi món', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
-                            child: const Text('Gọi món', style: TextStyle(fontSize: 12, color: Colors.white)),
                           ),
                         ],
                       ),
