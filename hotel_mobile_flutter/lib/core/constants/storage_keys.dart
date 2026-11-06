@@ -5,3 +5,4 @@ class StorageKeys {
   static const String userName = 'USER_NAME';
   static const String isDarkMode = 'IS_DARK_MODE';
 }
+

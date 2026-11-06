@@ -13,3 +13,4 @@ class UserSession {
     required this.token,
   });
 }
+

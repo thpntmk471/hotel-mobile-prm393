@@ -39,3 +39,4 @@ class LocalStorageService {
   String? getUserName() => _prefs.getString(StorageKeys.userName);
   String? getUserRole() => _prefs.getString(StorageKeys.userRole);
 }
+

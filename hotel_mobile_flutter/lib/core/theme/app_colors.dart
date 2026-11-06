@@ -29,3 +29,4 @@ class AppColors {
 
   static const Color error = Color(0xFFDC2626);
 }
+

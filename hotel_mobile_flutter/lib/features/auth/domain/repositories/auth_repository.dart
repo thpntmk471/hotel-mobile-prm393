@@ -5,3 +5,4 @@ abstract class AuthRepository {
   Future<void> logout();
   Future<UserSession?> getCachedSession();
 }
+
