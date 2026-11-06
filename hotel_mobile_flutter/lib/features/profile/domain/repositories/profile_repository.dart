@@ -10,3 +10,4 @@ abstract class ProfileRepository {
     required String email,
   });
 }
+

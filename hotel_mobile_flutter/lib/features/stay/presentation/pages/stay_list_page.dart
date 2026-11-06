@@ -136,13 +136,16 @@ class _StayListPageState extends State<StayListPage> {
                     final stay = stayProvider.stays[index];
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
+                      child: Material(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppColors.border),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -198,8 +201,9 @@ class _StayListPageState extends State<StayListPage> {
                           );
                         },
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
                 );
               },
             ),

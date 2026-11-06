@@ -48,3 +48,4 @@ class TaskProvider extends ChangeNotifier {
     await fetchTasks();
   }
 }
+

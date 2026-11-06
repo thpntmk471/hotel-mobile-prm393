@@ -31,3 +31,4 @@ class HousekeepingTask {
   bool get isInProgress => status == 'Đang dọn';
   bool get isDone => status == 'Hoàn thành';
 }
+

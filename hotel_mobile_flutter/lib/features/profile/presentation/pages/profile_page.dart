@@ -114,11 +114,13 @@ class ProfilePage extends StatelessWidget {
 
             // Mục: Cài đặt ứng dụng
             _buildSectionHeader('CÀI ĐẶT ỨNG DỤNG'),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+            Material(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                side: const BorderSide(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -165,11 +167,13 @@ class ProfilePage extends StatelessWidget {
 
             // Mục: Thông tin liên hệ
             _buildSectionHeader('THÔNG TIN LIÊN HỆ'),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+            Material(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                side: const BorderSide(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -199,11 +203,13 @@ class ProfilePage extends StatelessWidget {
 
             // Mục: Hệ thống & Đăng xuất
             _buildSectionHeader('HỆ THỐNG'),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+            Material(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                side: const BorderSide(color: AppColors.border),
               ),
               child: const Column(
                 children: [

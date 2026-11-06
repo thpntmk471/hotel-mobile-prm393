@@ -52,3 +52,4 @@ class TaskRepositoryImpl implements TaskRepository {
     return model.toEntity();
   }
 }
+
