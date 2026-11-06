@@ -1,159 +1,117 @@
 # Hướng Dẫn Thiết Kế Giao Diện Mobile App (Mobile UI/UX Design Guide)
 ## PRM393 - Hotel Booking & Management Mobile App
+### Chuẩn Professional Product UI & Mobile Ergonomics (Đồng bộ với PromptUI)
 
 > [!IMPORTANT]
-> Tài liệu này định nghĩa **quy chuẩn thiết kế giao diện (UI/UX)** cho ứng dụng di động Flutter.
-> Giao diện Mobile được đồng bộ hoàn toàn với hệ thống Web Backend (PRN232) về **màu sắc chủ đạo (Brand Color)**, **trạng thái (Status Tags)**, và **luồng nghiệp vụ cốt lõi**.
-> Lập trình viên và AI Coding Assistant **phải tuân thủ** các hướng dẫn bố cục, màu sắc và component bên dưới để đảm bảo đạt điểm tối đa ở tiêu chí **UI/UX (15%)** và **Business Logic (50%)**.
+> Tài liệu này chuẩn hóa toàn bộ thiết kế giao diện di động (Flutter Mobile App) theo triết lý **Senior Product UI — Anti-Generic AI Design** và **Mobile-First UX**.
+> Ứng dụng phải mang lại trải nghiệm tiện dụng, tối ưu cho thao tác một tay (Thumb Zone), sử dụng cấu trúc **Main Shell với Bottom Navigation Bar**, thẻ thông tin phân cấp thị giác rõ ràng, và loại bỏ hoàn toàn các layout desktop/web gượng ép trên di động.
 
 ---
 
-## 🎨 1. BẢNG MÀU CHỦ ĐẠO & PHONG CÁCH THIẾT KẾ (DESIGN SYSTEM)
+## 🎨 1. HỆ THỐNG MÀU SẮC & DESIGN TOKENS (DESIGN SYSTEM)
 
-Lấy cảm hứng từ giao diện Web Hotel Management (PRN232) hiện tại:
+Kế thừa màu sắc nhận diện thương hiệu từ Web Backend (PRN232) nhưng tinh chỉnh tỷ lệ tương phản cho màn hình cảm ứng di động:
 
 ```dart
 // lib/core/theme/app_colors.dart
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Màu thương hiệu chính (Deep Emerald Green - đồng bộ với Web)
-  static const Color primary = Color(0xFF1B5E4F);       // Xanh ngọc đậm (Nút chính, AppBar, Header)
-  static const Color primaryLight = Color(0xFFE8F2EF);  // Xanh nền nhạt (Highlight card, active tab)
-  static const Color primaryDark = Color(0xFF123F35);
+  // Brand Color chính (Deep Emerald Green)
+  static const Color primary = Color(0xFF1B5E4F);       // Xanh ngọc lục bảo đậm
+  static const Color primaryLight = Color(0xFFE8F2EF);  // Nền xanh nhạt cho Pill, Chip, Active Tab
+  static const Color primaryDark = Color(0xFF123F35);   // Xanh ngọc rất đậm cho AppBar ban đêm
 
-  // Nền & Chữ
-  static const Color background = Color(0xFFF8F9FA);    // Nền xám rất nhạt, sang trọng
-  static const Color surface = Colors.white;            // Nền thẻ card, form trắng
-  static const Color textPrimary = Color(0xFF1F2937);   // Chữ tiêu đề đậm
-  static const Color textSecondary = Color(0xFF6B7280); // Chữ mô tả, label phụ
-  static const Color border = Color(0xFFE5E7EB);        // Viền input, viền divider
+  // Nền & Phân tách khối
+  static const Color background = Color(0xFFF6F8FA);    // Xám nhạt dịu mắt, chống chói
+  static const Color surface = Colors.white;            // Nền Card, Sheet, Modal
+  static const Color border = Color(0xFFE5E7EB);        // Viền phân tách 1px mảnh
+  static const Color divider = Color(0xFFF1F3F5);
 
-  // Màu trạng thái phòng & đơn đặt (Status Chips - Đồng bộ 100% với Web)
-  static const Color statusActiveBg = Color(0xFFDCFCE7);    // Xanh lá nhạt
-  static const Color statusActiveText = Color(0xFF15803D);  // Hoạt động / Đã nhận phòng / Sạch
+  // Chữ & Typography Hierarchy
+  static const Color textPrimary = Color(0xFF111827);   // Tiêu đề, số liệu chính
+  static const Color textSecondary = Color(0xFF6B7280); // Nhãn mô tả phụ, caption
+  static const Color textTertiary = Color(0xFF9CA3AF);  // Placeholder, timestamp
 
-  static const Color statusWarningBg = Color(0xFFFEF3C7);   // Vàng cam nhạt
-  static const Color statusWarningText = Color(0xFFB45309); // Cần dọn / Đang chờ duyệt
+  // Trạng thái chuẩn nghiệp vụ khách sạn (Semantic Status)
+  static const Color statusActiveBg = Color(0xFFDCFCE7);    // Sạch / Đang lưu trú / Đã hoàn tất
+  static const Color statusActiveText = Color(0xFF15803D);
 
-  static const Color statusBlueBg = Color(0xFFDBEAFE);      // Xanh dương nhạt
-  static const Color statusBlueText = Color(0xFF1D4ED8);    // Đã xác nhận / Đặt trước
+  static const Color statusWarningBg = Color(0xFFFEF3C7);   // Cần dọn / Đang chờ xử lý / Ưu tiên cao
+  static const Color statusWarningText = Color(0xFFB45309);
 
-  static const Color statusGrayBg = Color(0xFFF3F4F6);      // Xám nhạt
-  static const Color statusGrayText = Color(0xFF4B5563);    // Đã trả phòng / Bảo trì
+  static const Color statusBlueBg = Color(0xFFDBEAFE);      // Đã xác nhận / Đặt trước
+  static const Color statusBlueText = Color(0xFF1D4ED8);
+
+  static const Color statusGrayBg = Color(0xFFF3F4F6);      // Đã trả phòng / Bảo trì
+  static const Color statusGrayText = Color(0xFF4B5563);
+
+  static const Color error = Color(0xFFEF4444);
 }
 ```
 
+### Quy tắc Spacing & Bo góc (Anti-Generic AI):
+- **Spacing Token:** Dùng bội số `4 / 8 / 12 / 16 / 20 / 24 / 32 px`.
+- **Bo góc (Corner Radius):**
+  - Card & Container: `12px` hoặc `16px`.
+  - Button & Input: `10px`.
+  - Status Pill: `20px` (dạng viên thuốc).
+  - *Tuyệt đối không bo góc quá lớn 30-40px trên mọi component.*
+- **Độ đổ bóng (Shadow):** Rất nhẹ (`blurRadius: 8, color: Colors.black.withOpacity(0.04)`), không dùng shadow đen đặc hay neon glow.
+
 ---
 
-## 📱 2. DANH SÁCH MÀN HÌNH CHÍNH & BỐ CỤC (CORE SCREENS)
+## 📱 2. KIẾN TRÚC ĐIỀU HƯỚNG MOBILE (BOTTOM NAVIGATION SHELL)
 
-Ứng dụng hướng đến sự **tinh gọn, trực quan, dễ dùng trên điện thoại**, gồm 5 nhóm màn hình chính:
+Ứng dụng sử dụng cấu trúc **Main Shell** với **Bottom Navigation Bar 5 Tabs** chuẩn Mobile Ergonomics, giúp người dùng chuyển đổi các phân hệ chỉ với một chạm ngón cái:
 
 ```mermaid
 graph TD
-    Login[1. Màn hình Đăng nhập] --> Home[2. Trang chủ / Dashboard]
-    Home --> RoomList[3. Tra cứu & Danh sách Phòng]
-    RoomList --> RoomDetail[4. Chi tiết Phòng]
-    RoomDetail --> Booking[5. Đặt phòng / Check-in]
-    Home --> ReservationList[6. Danh sách Đặt phòng]
-    ReservationList --> BookingDetail[7. Chi tiết Đơn đặt phòng]
-    Home --> TaskList[8. Quản lý dọn phòng - Staff]
-    Home --> Profile[9. Tài khoản cá nhân]
+    AppShell[Main Shell - Bottom Navigation Bar] --> Tab1[Tab 1: Tổng quan / Home Dashboard]
+    AppShell --> Tab2[Tab 2: Vận hành Phòng / Room List]
+    AppShell --> Tab3[Tab 3: Đặt phòng / Bookings]
+    AppShell --> Tab4[Tab 4: Lễ tân & Lưu trú / Stays]
+    AppShell --> Tab5[Tab 5: Hồ sơ & Cài đặt / Profile]
+    
+    Tab1 --> QuickActions[Phím tắt: Đặt phòng nhanh, Dịch vụ, Dọn dẹp]
+    Tab2 --> RoomDetailSheet[Bottom Sheet: Chi tiết & Tiện ích phòng]
+    Tab3 --> BookingForm[Form Đặt phòng mới]
+    Tab4 --> StayFolio[Hóa đơn điện tử Stay Folio]
 ```
 
----
+### 1. Tab 1: Tổng quan (Home Dashboard - Bàn làm việc Lễ tân)
+- **Top Bar:** Avatar cá nhân, Lời chào, Tag vai trò (`● Receptionist`), Tên cơ sở khách sạn (`PRM Grand Luxury Hotel`).
+- **Operational KPI Carousel / Grid:** 4 thẻ đo lường vận hành trực tiếp từ hệ thống:
+  - 🏠 **Phòng trống sẵn sàng:** `X/Y phòng`
+  - 📈 **Tỷ lệ lấp đầy:** `... %`
+  - 📥 **Lượt khách check-in hôm nay:** `... lượt`
+  - 🧹 **Phòng cần dọn cấp thiết:** `... phòng`
+- **Quick Action Row (Phím tắt tròn/vuông mềm chuẩn mobile):**
+  - `+ Đặt phòng` • `📥 Nhận phòng` • `🛎️ Dịch vụ` • `🧹 Buồng phòng`
+- **Hoạt động hôm nay (Today's Feed):** Danh sách lượt khách đang lưu trú và các tác vụ cần xử lý ngay trong ca trực.
 
-### MÀN HÌNH 1: ĐĂNG NHẬP (`LoginScreen`)
-* **Mục tiêu:** Cho phép khách hàng hoặc nhân viên (Lễ tân, Buồng phòng) đăng nhập vào hệ thống.
-* **Bố cục:**
-  - Header: Logo Khách sạn (`HM` logo nền đen bo góc, chữ trắng).
-  - Tiêu đề: *"Đăng nhập - Nhập thông tin tài khoản để truy cập hệ thống"*.
-  - Form Fields:
-    - `Tên đăng nhập` (Input viền xám, bo góc 8px).
-    - `Mật khẩu` (Input kèm nút icon con mắt "Hiện/Ẩn" mật khẩu).
-  - Nút bấm chính: **"Đăng nhập"** (Nút màu xanh `AppColors.primary`, chữ trắng, bo góc 8px).
-  - Tài khoản mẫu gợi ý hiển thị bên dưới (ví dụ: `demo.reception / 123456`) giúp giáo viên chấm bài đăng nhập được ngay.
+### 2. Tab 2: Vận hành Phòng (Rooms)
+- Thanh tìm kiếm và bộ lọc nhanh ngang (Tất cả, Standard, Deluxe, VIP).
+- Thẻ phòng tối ưu mobile: Header rõ mã phòng (`DEV-101`), số tầng, sức chứa (`2 khách`), giá tiền VND in đậm, chip tình trạng dọn dẹp và nút bấm chuyển trạng thái trực tiếp.
 
----
+### 3. Tab 3: Quản lý Đặt phòng (Bookings)
+- Danh sách đơn đặt phòng (`RSV-...`).
+- **Floating Action Button (FAB):** Nút tròn nổi `+ Đặt phòng` ở góc dưới bên phải màn hình để tạo đơn nhanh.
+- Nút bấm trực tiếp trên từng thẻ: "Check-in nhận phòng" chuyển đổi ngay sang trạng thái lưu trú.
 
-### MÀN HÌNH 2: TRANG CHỦ / ĐIỀU HƯỚNG (`HomeScreen`)
-* **Bố cục:**
-  - **Header:** Lời chào cá nhân hóa *"Xin chào, Lễ tân Demo"* kèm Tag vai trò (`● Receptionist` màu xanh).
-  - **Banner / Quick Action Cards:**
-    - 🛏️ **Quản lý phòng:** Xem tình trạng phòng, số phòng trống hôm nay.
-    - 📅 **Đặt phòng:** Tạo đơn đặt phòng mới, duyệt đơn.
-    - 🧹 **Buồng phòng:** Danh sách phòng cần dọn dẹp.
-  - **Bottom Navigation Bar (Thanh điều hướng dưới đáy):**
-    1. Trang chủ (Home)
-    2. Phòng (Rooms)
-    3. Đơn đặt (Bookings)
-    4. Cá nhân (Profile)
+### 4. Tab 4: Lễ tân & Lưu trú (Stays)
+- Danh sách các phòng đang có khách ở thực tế (`STY-...`).
+- Xem chi tiết hóa đơn (Hotel Folio Invoice) gồm tiền phòng, dịch vụ minibar phát sinh và modal thanh toán (Tiền mặt / VNPay QR / Thẻ).
 
----
-
-### MÀN HÌNH 3: DANH SÁCH PHÒNG & BỘ LỌC (`RoomListPage`)
-*(Bám sát giao diện bảng Room trên Web)*
-* **Bộ lọc nhanh (Horizontal Filter Chips):**
-  - Loại phòng: *Tất cả*, *Phòng Standard*, *Phòng Deluxe*, *Phòng VIP*.
-  - Trạng thái: *Tất cả*, *Sạch*, *Cần dọn*.
-* **Danh sách phòng (Card view tối ưu mobile thay vì Table ngang):**
-  - Mỗi phòng là 1 thẻ `Card` bo góc:
-    - **Header Card:** Mã phòng in đậm (ví dụ: `DEV-101`, `DEV-201`), số tầng (`Tầng 1`, `Tầng 2`).
-    - **Body:** Tên loại phòng, Giá tiền/đêm (định dạng VND: `500.000 VNĐ`).
-    - **Status Chips:**
-      - Chip Hoạt động: `● Hoạt động` (xanh lá).
-      - Chip Tình trạng: `● Sạch` (xanh lá) hoặc `● Cần dọn` (màu vàng cam).
-    - **Thao tác:** Nút *"Chi tiết"* và *"Đặt phòng"*.
+### 5. Tab 5: Hồ sơ & Cài đặt (Profile)
+- Quản lý ca trực, thông tin liên hệ, công tắc chuyển đổi Chế độ tối (Dark Mode) thời gian thực và đăng xuất an toàn.
 
 ---
 
-### MÀN HÌNH 4: ĐẶT PHÒNG (`BookingScreen` / `ReservationScreen`)
-*(Nơi thể hiện 50% điểm Business Logic / Rules)*
-* **Form nhập liệu chuẩn:**
-  1. **Chọn ngày lưu trú:**
-     - `Từ ngày (Check-in)` & `Đến ngày (Check-out)` (Dùng `showDatePicker`).
-     - **Rule bắt buộc:** Không cho chọn ngày trong quá khứ; Ngày Check-out phải sau ngày Check-in.
-  2. **Chọn phòng:** Dropdown hoặc chọn từ danh sách phòng trống.
-  3. **Thông tin khách hàng:** Tên khách, Số điện thoại (Validate định dạng 10 số), CCCD/Passport.
-  4. **Số lượng khách:** Bắt buộc $\ge 1$ và không vượt quá sức chứa của loại phòng.
-  5. **Bảng tóm tắt chi phí (Cost Summary):**
-     - Tiền phòng = Đơn giá $\times$ Số đêm.
-     - Dịch vụ thêm (nếu có).
-     - **Tổng tiền thanh toán** (In đậm to rõ).
-  6. **Nút hành động:** **"Xác nhận đặt phòng"** (Disable nếu form chưa hợp lệ).
+## 🛠️ 3. QUY TẮC FORM & THAO TÁC CẢM ỨNG (MOBILE UX RULES)
 
----
-
-### MÀN HÌNH 5: DANH SÁCH ĐƠN ĐẶT PHÒNG (`ReservationListPage`)
-*(Bám sát dữ liệu bảng Quản lý Đặt phòng trên Web)*
-* **Thanh tìm kiếm:** Tìm nhanh theo Mã đặt phòng (`RSV...`) hoặc Tên khách hàng.
-* **Item hiển thị:**
-  - Mã đơn: `RSV334E35DF4B` (Màu xanh đậm).
-  - Tên khách: `Khách Test F07` - Số khách: `1 khách`.
-  - Phòng: `F09TEST-101`.
-  - Thời gian: `04/11/2026 -> 06/11/2026`.
-  - Tổng tiền: `900.000 VNĐ`.
-  - Tag trạng thái:
-    - `Đã xác nhận` (Xanh dương).
-    - `Đã nhận phòng` (Xanh lá).
-    - `Đã trả phòng` (Xám).
-
----
-
-## 🧩 3. COMMON WIDGETS CẦN DÙNG (TÁI SỬ DỤNG)
-
-Để giữ code gọn và Clean Architecture, lập trình viên tạo sẵn các widget này trong `core/widgets/`:
-1. **`CustomButton`:** Nút bấm màu xanh `AppColors.primary`, có hiệu ứng loading khi đang bấm gọi API.
-2. **`CustomTextField`:** Ô nhập liệu viền xám, bo góc 8px, hiển thị label và câu báo lỗi đỏ rõ ràng.
-3. **`StatusChip`:** Nhãn trạng thái tròn bo góc (`Sạch`, `Cần dọn`, `Đã xác nhận`...) tự đổi màu theo status string.
-4. **`EmptyStateWidget`:** Hiển thị icon và câu thông báo khi danh sách phòng hoặc đơn đặt rỗng.
-
----
-
-## 🎯 4. NGUYÊN TẮC TRẢI NGHIỆM NGƯỜI DÙNG (UX RULES ĐẠT ĐIỂM CAO)
-
-1. **Luôn có Loading & Error Feedback:** Khi bấm nút hoặc tải danh sách, bắt buộc hiện `CircularProgressIndicator` hoặc Shimmer. Nếu lỗi mạng phải hiện `SnackBar` hoặc Dialog thân thiện, không để màn hình trắng xóa.
-2. **Xác nhận thao tác nguy hiểm (Confirmation Dialog):** Khi Hủy phòng hoặc Check-out trả phòng, phải có hộp thoại *"Bạn có chắc chắn muốn hủy đặt phòng này?"*.
-3. **Format tiền tệ & thời gian chuẩn Việt Nam:** Luôn hiển thị `500.000 VNĐ` (thay vì `500000`) và ngày dạng `dd/MM/yyyy`.
-
+1. **Vùng chạm tối thiểu (Touch Target):** Mọi nút bấm, icon bấm được đều có kích thước tối thiểu $44 \times 44$ pt.
+2. **Sticky Bottom Action Bar:** Trong form đặt phòng và thanh toán hóa đơn, thanh tóm tắt tổng tiền và nút bấm chính luôn được **ghim cố định ở chân màn hình** (`BottomAppBar` hoặc `Container` kèm `SafeArea`), người dùng không cần phải cuộn hết form mới bấm được nút.
+3. **Pull-to-Refresh:** Tất cả các danh sách đều hỗ trợ vuốt xuống để tải lại dữ liệu mới nhất (`RefreshIndicator`).
+4. **Bottom Sheet thay cho Modal nhỏ:** Trên thiết bị di động, ưu tiên mở Bottom Sheet trượt từ dưới lên để xem chi tiết phòng, bộ lọc nâng cao hoặc chọn phương thức thanh toán.
+5. **Xác nhận an toàn (Destructive Action):** Thao tác trả phòng hoặc hủy đơn bắt buộc có hộp thoại xác nhận với 2 nút có thứ bậc thị giác rõ ràng (Hủy: xám nhạt, Đồng ý: màu cảnh báo).

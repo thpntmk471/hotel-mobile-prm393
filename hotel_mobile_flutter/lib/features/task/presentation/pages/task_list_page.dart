@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/housekeeping_task.dart';
 import '../providers/task_provider.dart';
@@ -38,7 +39,7 @@ class _TaskListPageState extends State<TaskListPage> {
           // Lọc trạng thái công việc
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -89,18 +90,24 @@ class _TaskListPageState extends State<TaskListPage> {
                   return Center(child: Text(taskProvider.errorMessage!));
                 }
                 if (taskProvider.tasks.isEmpty) {
-                  return const Center(
-                    child: Text('Không có nhiệm vụ nào cần xử lý.', style: TextStyle(color: AppColors.textSecondary)),
+                  return const EmptyStateWidget(
+                    icon: Icons.cleaning_services_outlined,
+                    title: 'Không có nhiệm vụ nào cần xử lý',
+                    subtitle:
+                        'Hiện tại tất cả các phòng đã được dọn sạch sẽ hoặc chưa có phòng nào phát sinh yêu cầu dọn.',
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: taskProvider.tasks.length,
-                  itemBuilder: (context, index) {
-                    final t = taskProvider.tasks[index];
-                    return _buildTaskCard(context, t, currentStaff);
-                  },
+                return RefreshIndicator(
+                  onRefresh: () => context.read<TaskProvider>().fetchTasks(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: taskProvider.tasks.length,
+                    itemBuilder: (context, index) {
+                      final t = taskProvider.tasks[index];
+                      return _buildTaskCard(context, t, currentStaff);
+                    },
+                  ),
                 );
               },
             ),

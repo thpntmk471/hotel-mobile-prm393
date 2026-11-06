@@ -20,6 +20,7 @@ class Room {
   });
 
   bool get isClean => housekeepingStatus == 'Sạch';
+  bool get isDirty => housekeepingStatus == 'Cần dọn';
   bool get isActive => operationalStatus == 'Hoạt động';
 }
 

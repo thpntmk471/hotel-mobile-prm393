@@ -35,5 +35,8 @@ class Reservation {
     final diff = checkOutDate.difference(checkInDate).inDays;
     return diff <= 0 ? 1 : diff;
   }
+
+  bool get isConfirmed => status == 'Đã xác nhận';
+  bool get isCheckedIn => status == 'Đã nhận phòng';
 }
 

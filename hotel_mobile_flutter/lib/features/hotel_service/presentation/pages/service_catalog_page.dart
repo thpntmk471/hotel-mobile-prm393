@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_button.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
 import '../../domain/entities/hotel_service_item.dart';
 import '../providers/hotel_service_provider.dart';
 
@@ -157,7 +158,7 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
           // Tìm kiếm & Danh mục
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             child: Column(
               children: [
                 TextField(
@@ -228,15 +229,20 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                   return Center(child: Text(provider.errorMessage!));
                 }
                 if (provider.services.isEmpty) {
-                  return const Center(
-                    child: Text('Không tìm thấy dịch vụ nào.', style: TextStyle(color: AppColors.textSecondary)),
+                  return const EmptyStateWidget(
+                    icon: Icons.room_service_outlined,
+                    title: 'Không tìm thấy dịch vụ nào',
+                    subtitle:
+                        'Vui lòng thử tìm kiếm với từ khóa khác hoặc chuyển sang danh mục dịch vụ khác.',
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: provider.services.length,
-                  itemBuilder: (context, index) {
+                return RefreshIndicator(
+                  onRefresh: () => context.read<HotelServiceProvider>().fetchServices(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: provider.services.length,
+                    itemBuilder: (context, index) {
                     final s = provider.services[index];
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -294,7 +300,8 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                       ),
                     );
                   },
-                );
+                ),
+              );
               },
             ),
           ),

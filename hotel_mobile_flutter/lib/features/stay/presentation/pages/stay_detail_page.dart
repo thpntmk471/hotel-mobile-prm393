@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_button.dart';
+import '../../../../core/widgets/sticky_bottom_action_bar.dart';
 import '../../domain/entities/stay.dart';
 
 class StayDetailPage extends StatefulWidget {
@@ -286,32 +287,53 @@ class _StayDetailPageState extends State<StayDetailPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            if (widget.stay.isActive) ...[
-              CustomButton(
-                text: 'Thanh toán & Trả phòng',
-                onPressed: () => _showPaymentDialog(context),
-              ),
-            ] else ...[
+            if (!widget.stay.isActive)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.statusActiveBg,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
                 child: const Text(
-                  '✓ Hóa đơn này đã được thanh toán hoàn tất',
-                  style: TextStyle(color: AppColors.statusActiveText, fontWeight: FontWeight.bold),
+                  '✓ Hóa đơn này đã được thanh toán và hoàn tất trả phòng',
+                  style: TextStyle(
+                    color: AppColors.statusActiveText,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ],
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         ),
       ),
+      bottomNavigationBar: widget.stay.isActive
+          ? StickyBottomActionBar(
+              leading: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tổng tiền hóa đơn',
+                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                  ),
+                  Text(
+                    _formatCurrency(widget.stay.grandTotal),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              buttonText: 'Thanh toán & Trả phòng',
+              onPressed: () => _showPaymentDialog(context),
+            )
+          : null,
     );
   }
 }

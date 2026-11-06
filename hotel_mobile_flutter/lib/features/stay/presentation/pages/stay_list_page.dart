@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
 import '../providers/stay_provider.dart';
 import 'stay_detail_page.dart';
 
@@ -124,21 +125,25 @@ class _StayListPageState extends State<StayListPage> {
                   return Center(child: Text(stayProvider.errorMessage!));
                 }
                 if (stayProvider.stays.isEmpty) {
-                  return const Center(
-                    child: Text('Không có phòng nào đang lưu trú.', style: TextStyle(color: AppColors.textSecondary)),
+                  return const EmptyStateWidget(
+                    icon: Icons.assignment_outlined,
+                    title: 'Chưa có phòng nào đang lưu trú',
+                    subtitle:
+                        'Các đơn đặt phòng sau khi làm thủ tục Check-in nhận phòng sẽ được theo dõi tại đây.',
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: stayProvider.stays.length,
-                  itemBuilder: (context, index) {
+                return RefreshIndicator(
+                  onRefresh: () => context.read<StayProvider>().fetchStays(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: stayProvider.stays.length,
+                    itemBuilder: (context, index) {
                     final stay = stayProvider.stays[index];
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: Material(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
                         clipBehavior: Clip.antiAlias,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -203,8 +208,9 @@ class _StayListPageState extends State<StayListPage> {
                       ),
                     ),
                   );
-                },
-                );
+                  },
+                ),
+              );
               },
             ),
           ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/sticky_bottom_action_bar.dart';
 import '../../../room/domain/entities/room.dart';
 import '../providers/reservation_provider.dart';
 
@@ -407,18 +407,33 @@ class _BookingPageState extends State<BookingPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // 5. Nút bấm Xác nhận đặt phòng
-              CustomButton(
-                text: 'Xác nhận đặt phòng',
-                isLoading: isSubmitting,
-                onPressed: _onSubmit,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: StickyBottomActionBar(
+        leading: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$_nights đêm • ${_selectedRoom.roomNumber}',
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
+            Text(
+              _formatCurrency(_totalPrice),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+        buttonText: 'Xác nhận đặt',
+        isLoading: isSubmitting,
+        onPressed: _onSubmit,
       ),
     );
   }

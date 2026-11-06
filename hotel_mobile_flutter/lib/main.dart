@@ -9,8 +9,8 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
-import 'features/auth/presentation/pages/home_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/pages/main_shell_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/hotel_service/data/datasources/hotel_service_remote_datasource.dart';
 import 'features/hotel_service/data/repositories/hotel_service_repository_impl.dart';
@@ -139,7 +139,7 @@ class HotelManagementApp extends StatelessWidget {
                 );
               }
               if (auth.isAuthenticated) {
-                return const HomePage();
+                return const MainShellPage();
               }
               return const LoginPage();
             },

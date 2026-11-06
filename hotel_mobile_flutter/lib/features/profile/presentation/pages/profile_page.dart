@@ -116,7 +116,6 @@ class ProfilePage extends StatelessWidget {
             _buildSectionHeader('CÀI ĐẶT ỨNG DỤNG'),
             Material(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -169,7 +168,6 @@ class ProfilePage extends StatelessWidget {
             _buildSectionHeader('THÔNG TIN LIÊN HỆ'),
             Material(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -205,7 +203,6 @@ class ProfilePage extends StatelessWidget {
             _buildSectionHeader('HỆ THỐNG'),
             Material(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../reservation/presentation/pages/booking_page.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
@@ -188,41 +189,44 @@ class _RoomListPageState extends State<RoomListPage> {
                   );
                 }
                 if (roomProvider.rooms.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Không tìm thấy phòng phù hợp.',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
+                  return const EmptyStateWidget(
+                    icon: Icons.meeting_room_outlined,
+                    title: 'Không tìm thấy phòng phù hợp',
+                    subtitle:
+                        'Vui lòng thử tìm kiếm bằng mã phòng khác hoặc thiết lập lại bộ lọc.',
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: roomProvider.rooms.length,
-                  itemBuilder: (context, index) {
-                    final room = roomProvider.rooms[index];
-                    return RoomCard(
-                      room: room,
-                      onToggleHousekeeping: () {
-                        context.read<RoomProvider>().toggleHousekeepingStatus(room);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Đã cập nhật phòng ${room.roomNumber} sang: ${room.housekeepingStatus == 'Sạch' ? 'Cần dọn' : 'Sạch'}',
+                return RefreshIndicator(
+                  onRefresh: () => context.read<RoomProvider>().fetchRooms(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: roomProvider.rooms.length,
+                    itemBuilder: (context, index) {
+                      final room = roomProvider.rooms[index];
+                      return RoomCard(
+                        room: room,
+                        onToggleHousekeeping: () {
+                          context.read<RoomProvider>().toggleHousekeepingStatus(room);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Đã cập nhật phòng ${room.roomNumber} sang: ${room.housekeepingStatus == 'Sạch' ? 'Cần dọn' : 'Sạch'}',
+                              ),
+                              duration: const Duration(seconds: 1),
                             ),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                      onBookNow: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => BookingPage(initialRoom: room),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                          );
+                        },
+                        onBookNow: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BookingPage(initialRoom: room),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 );
               },
             ),
