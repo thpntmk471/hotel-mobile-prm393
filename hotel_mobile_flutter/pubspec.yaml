@@ -1,5 +1,5 @@
 name: hotel_booking_mobile
-description: "PRM393 Hotel Management & Booking Mobile App using Clean Architecture and Riverpod."
+description: "PRM393 Hotel Management & Booking Mobile App using Clean Architecture and Provider."
 publish_to: "none"
 version: 1.0.0+1
 
@@ -11,36 +11,28 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
-  # Networking & Serialization
-  dio: ^5.7.0
-  json_annotation: ^4.9.0
+  # State Management (Chuẩn giáo trình PRM393)
+  provider: ^6.1.2
 
-  # State Management & DI
-  flutter_riverpod: ^2.5.1
-  riverpod_annotation: ^2.3.5
+  # Networking
+  dio: ^5.7.0
 
   # Routing
   go_router: ^14.2.7
 
-  # Secure Local Storage & Cache
-  flutter_secure_storage: ^9.2.2
+  # Local Storage & Persistence (Đáp ứng tiêu chí môn học)
   shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
   cached_network_image: ^3.4.1
 
-  # Utilities & Logging
+  # Utilities
   intl: ^0.19.0
   logger: ^2.4.0
-  freezed_annotation: ^2.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  build_runner: ^2.4.10
-  freezed: ^2.5.2
-  json_serializable: ^6.8.0
-  riverpod_generator: ^2.4.0
 
 flutter:
   uses-material-design: true
-

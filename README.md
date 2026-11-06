@@ -96,3 +96,4 @@ flutter run
 - [Hướng dẫn kiến trúc & Coding Standards cho AI / Dev](hotel-management-docs/developer_guide.md)
 - [Sơ đồ chi tiết luồng Đặt phòng & Lưu trú](hotel-management-docs/hotel_booking_flow_guide.md)
 - [Phân chia nhiệm vụ nhóm (Team Tasks)](hotel-management-docs/TEAM_TASKS.md)
+

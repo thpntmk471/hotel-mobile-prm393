@@ -2,6 +2,7 @@
 
 > [!IMPORTANT]
 > Tài liệu này định nghĩa **quy chuẩn kiến trúc bắt buộc** cho dự án **Hotel Mobile App (PRM393)** kết nối với Backend **PRN232 Micro-APIs**.
+> Hệ thống sử dụng State Management chuẩn giáo trình **`provider` (`ChangeNotifier`)**, tuân thủ nguyên tắc **Clean Architecture** phân chia theo Feature.
 > Mọi lập trình viên và **AI Coding Assistant** khi tạo mới hoặc sửa đổi code trong dự án này **bắt buộc phải tuân thủ nghiêm ngặt** các nguyên tắc dưới đây.
 
 ---
@@ -12,12 +13,12 @@ Hệ thống tuân thủ mô hình **Feature-First Clean Architecture**:
 
 ```mermaid
 graph TD
-    subgraph Presentation Layer [Lớp Trình Diễn]
-        UI[Pages & Widgets] -->|Lắng nghe & gửi intent| Provider[Riverpod StateNotifier / Notifier]
+    subgraph Presentation Layer [Lớp Trình Diễn - UI & Provider]
+        UI[Pages & Widgets] -->|Lắng nghe Consumer / context.watch| VM[ChangeNotifier Providers]
     end
 
     subgraph Domain Layer [Lớp Nghiệp Vụ Sạch - Pure Dart]
-        Provider -->|Gọi thực thi| UseCase[Use Cases]
+        VM -->|Gọi thực thi| UseCase[Use Cases]
         UseCase -->|Yêu cầu dữ liệu| RepoInterface[Repository Interfaces]
         RepoInterface -.->|Sử dụng| Entity[Entities]
     end
@@ -35,7 +36,7 @@ graph TD
     classDef data fill:#F57C00,stroke:#E65100,stroke-width:2px,color:#fff;
     classDef backend fill:#6A1B9A,stroke:#4A148C,stroke-width:2px,color:#fff;
 
-    class UI,Provider presentation;
+    class UI,VM presentation;
     class UseCase,RepoInterface,Entity domain;
     class RepoImpl,DataSource,DTO data;
     class Backend backend;
@@ -46,25 +47,25 @@ graph TD
 ## 🚫 RANH GIỚI BẮT BUỘC GIỮA CÁC TẦNG (STRICT BOUNDARIES)
 
 1. **Lớp Domain (Domain Layer - Pure Dart):**
-   - **Tuyệt đối cấm** import bất kỳ thư viện bên thứ ba nào (như `dio`, `flutter_secure_storage`, `riverpod`) hoặc các tệp từ `presentation/` và `data/`.
+   - **Tuyệt đối cấm** import bất kỳ thư viện bên thứ ba nào (như `dio`, `shared_preferences`, `provider`) hoặc các tệp từ `presentation/` và `data/`.
    - Các class `Entity` phải thuần khiết: **không** chứa hàm `fromJson`, `toJson`. Việc parse JSON thuộc trách nhiệm của Data Layer.
    - Chỉ chứa: `entities/`, `repositories/` (dưới dạng abstract class/interface) và `usecases/`.
 
 2. **Lớp Data (Data Layer):**
-   - Chịu trách nhiệm tương tác trực tiếp với API thông qua `DioClient`.
+   - Chịu trách nhiệm tương tác trực tiếp với API thông qua `DioClient` và lưu trữ cục bộ (`SharedPreferences`).
    - Các Model DTO tại `data/models/` đảm nhiệm serialize/deserialize JSON (`fromJson`, `toJson`).
-   - **Bắt buộc:** Mọi hàm trong `Repository Implementation` phải chuyển đổi (map) Model DTO thành Entity của Domain bằng hàm extension hoặc method `.toEntity()` trước khi trả dữ liệu về.
+   - **Bắt buộc:** Mọi hàm trong `Repository Implementation` phải chuyển đổi (map) Model DTO thành Entity của Domain bằng phương thức `.toEntity()` trước khi trả dữ liệu về.
 
 3. **Lớp Presentation (Presentation Layer):**
-   - **Tuyệt đối cấm** gọi trực tiếp các lớp trong `data/` (như Data Source hay Repo Implementation).
-   - Widget chỉ giao tiếp với ViewModel/Provider thông qua `ref.watch()`, `ref.read()`.
-   - Mọi State phải là **Immutable** (sử dụng `Freezed` hoặc `@immutable` của Riverpod Generator).
+   - **Tuyệt đối cấm** gọi trực tiếp các lớp trong `data/` (như Remote Data Source hay Dio).
+   - Widget giao tiếp với State thông qua `Provider`: dùng `context.watch<T>()` để vẽ lại UI khi có thay đổi, hoặc `context.read<T>()` để gọi các hàm sự kiện (nhấn nút, nạp dữ liệu).
+   - Sử dụng `Consumer<T>` cho các vùng UI nhỏ cần re-render tối ưu.
 
 ---
 
-## 🌐 PHẦN II: TỔ CHỨC GIAO TIẾP VỚI PRN232 BACKEND MICRO-APIS
+## 🌐 PHẦN II: CẤU HÌNH GIAO TIẾP VỚI PRN232 BACKEND MICRO-APIS
 
-Hệ thống Backend PRN232 gồm **12 Microservices độc lập**, do đó Mobile Client quản lý URL tập trung tại `core/constants/api_constants.dart`:
+Mobile Client quản lý URL tập trung tại `core/constants/api_constants.dart`:
 
 ```dart
 class ApiConstants {
@@ -89,7 +90,7 @@ class ApiConstants {
 
 ---
 
-## 🛠️ PHẦN III: TIÊU CHUẨN CODE MẪU THEO TỪNG THÀNH PHẦN
+## 🛠️ PHẦN III: TIÊU CHUẨN CODE MẪU BẰNG PROVIDER (`ChangeNotifier`)
 
 ### 1. Domain Layer: Entity & Repository Interface
 
@@ -97,7 +98,7 @@ class ApiConstants {
 // lib/features/room/domain/entities/room.dart
 class Room {
   final int id;
-  final string roomNumber;
+  final String roomNumber;
   final int roomTypeId;
   final String roomTypeName;
   final double pricePerNight;
@@ -115,12 +116,12 @@ class Room {
 
 // lib/features/room/domain/repositories/room_repository.dart
 abstract class RoomRepository {
-  Future<List<Room>> getAvailableRooms({DateTime? checkIn, DateTime? checkOut, int? roomTypeId});
+  Future<List<Room>> getAvailableRooms();
   Future<Room> getRoomById(int id);
 }
 ```
 
-### 2. Data Layer: Model DTO & Mapper
+### 2. Data Layer: Model DTO & Repository Implementation
 
 ```dart
 // lib/features/room/data/models/room_model.dart
@@ -154,101 +155,143 @@ class RoomModel {
     );
   }
 
-  // Chuyển đổi Model tầng Data thành Entity tầng Domain
+  // Chuyển đổi Model DTO tầng Data thành Entity thuần tầng Domain
   Room toEntity() {
     return Room(
       id: id,
       roomNumber: roomNumber,
       roomTypeId: roomTypeId,
-      roomTypeName: roomTypeName ?? 'Standard',
+      roomTypeName: roomTypeName ?? 'Tiêu chuẩn',
       pricePerNight: pricePerNight,
       status: status,
     );
   }
 }
-```
-
-### 3. Data Layer: Repository Implementation & Data Source
-
-```dart
-// lib/features/room/data/datasources/room_remote_datasource.dart
-import 'package:dio/dio.dart';
-import '../../../../core/constants/api_constants.dart';
-import '../models/room_model.dart';
-
-abstract class RoomRemoteDataSource {
-  Future<List<RoomModel>> fetchAvailableRooms();
-}
-
-class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
-  final Dio dio;
-  RoomRemoteDataSourceImpl(this.dio);
-
-  @override
-  Future<List<RoomModel>> fetchAvailableRooms() async {
-    final response = await dio.get('${ApiConstants.roomUrl}/available');
-    final list = response.data as List;
-    return list.map((e) => RoomModel.fromJson(e as Map<String, dynamic>)).toList();
-  }
-}
 
 // lib/features/room/data/repositories/room_repository_impl.dart
+import 'package:dio/dio.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../domain/entities/room.dart';
 import '../../domain/repositories/room_repository.dart';
-import '../datasources/room_remote_datasource.dart';
+import '../models/room_model.dart';
 
 class RoomRepositoryImpl implements RoomRepository {
-  final RoomRemoteDataSource remoteDataSource;
-  RoomRepositoryImpl(this.remoteDataSource);
+  final Dio dio;
+  RoomRepositoryImpl(this.dio);
 
   @override
-  Future<List<Room>> getAvailableRooms({DateTime? checkIn, DateTime? checkOut, int? roomTypeId}) async {
-    final models = await remoteDataSource.fetchAvailableRooms();
+  Future<List<Room>> getAvailableRooms() async {
+    final response = await dio.get('${ApiConstants.roomUrl}/available');
+    final data = response.data as List;
+    final models = data.map((json) => RoomModel.fromJson(json as Map<String, dynamic>)).toList();
     return models.map((m) => m.toEntity()).toList();
   }
 
   @override
   Future<Room> getRoomById(int id) async {
-    throw UnimplementedError();
+    final response = await dio.get('${ApiConstants.roomUrl}/$id');
+    final model = RoomModel.fromJson(response.data as Map<String, dynamic>);
+    return model.toEntity();
   }
 }
 ```
 
-### 4. Presentation Layer: State & Riverpod Provider
+### 3. Presentation Layer: State Management với `ChangeNotifier` (Provider)
 
 ```dart
-// lib/features/room/presentation/providers/room_state.dart
-import 'package:freezed_annotation/freezed_annotation.dart';
+// lib/features/room/presentation/providers/room_provider.dart
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/room.dart';
+import '../../domain/repositories/room_repository.dart';
 
-part 'room_state.freezed.dart';
+class RoomProvider extends ChangeNotifier {
+  final RoomRepository roomRepository;
 
-@freezed
-class RoomState with _$RoomState {
-  const factory RoomState.initial() = _Initial;
-  const factory RoomState.loading() = _Loading;
-  const factory RoomState.loaded(List<Room> rooms) = _Loaded;
-  const factory RoomState.error(String message) = _Error;
+  RoomProvider({required this.roomRepository});
+
+  List<Room> _rooms = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  List<Room> get rooms => _rooms;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> fetchAvailableRooms() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // Báo UI bật loading indicator
+
+    try {
+      _rooms = await roomRepository.getAvailableRooms();
+    } catch (e) {
+      _errorMessage = 'Không thể tải danh sách phòng: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // Báo UI hiển thị kết quả hoặc báo lỗi
+    }
+  }
+}
+```
+
+### 4. Presentation Layer: UI Screen với `Consumer` / `context.watch`
+
+```dart
+// lib/features/room/presentation/pages/room_list_page.dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/room_provider.dart';
+
+class RoomListPage extends StatefulWidget {
+  const RoomListPage({super.key});
+
+  @override
+  State<RoomListPage> createState() => _RoomListPageState();
 }
 
-// lib/features/room/presentation/providers/room_notifier.dart
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/usecases/get_available_rooms_usecase.dart';
-import 'room_state.dart';
+class _RoomListPageState extends State<RoomListPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Gọi tải dữ liệu sau khi frame đầu tiên render xong
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RoomProvider>().fetchAvailableRooms();
+    });
+  }
 
-class RoomNotifier extends StateNotifier<RoomState> {
-  final GetAvailableRoomsUseCase getAvailableRoomsUseCase;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Danh Sách Phòng Khách Sạn')),
+      body: Consumer<RoomProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (provider.errorMessage != null) {
+            return Center(child: Text(provider.errorMessage!));
+          }
+          if (provider.rooms.isEmpty) {
+            return const Center(child: Text('Hiện tại không có phòng trống.'));
+          }
 
-  RoomNotifier(this.getAvailableRoomsUseCase) : super(const RoomState.initial());
-
-  Future<void> loadRooms() async {
-    state = const RoomState.loading();
-    try {
-      final rooms = await getAvailableRoomsUseCase();
-      state = RoomState.loaded(rooms);
-    } catch (e) {
-      state = RoomState.error(e.toString());
-    }
+          return ListView.builder(
+            itemCount: provider.rooms.length,
+            itemBuilder: (context, index) {
+              final room = provider.rooms[index];
+              return ListTile(
+                title: Text('Phòng ${room.roomNumber} - ${room.roomTypeName}'),
+                subtitle: Text('Giá: ${room.pricePerNight} VNĐ / đêm'),
+                trailing: Chip(
+                  label: Text(room.status),
+                  backgroundColor: room.status == 'Available' ? Colors.green[100] : Colors.grey[200],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }
 ```
@@ -257,8 +300,6 @@ class RoomNotifier extends StateNotifier<RoomState> {
 
 ## 🔒 QUY TẮC BẢO MẬT & QUẢN LÝ PHIÊN (AUTH & TOKEN)
 
-1. **Lưu Token an toàn:** Mọi Access Token và Refresh Token **bắt buộc** phải lưu trong `FlutterSecureStorage` (tại `core/storage/secure_storage_service.dart`).
-2. **Auth Interceptor tự động:** Cấu hình Dio Interceptor tự động đính kèm header:
-   `Authorization: Bearer <token>` cho mọi request gọi đến các Micro-API cần xác thực.
-3. **Xử lý 401 Unauthorized:** Khi nhận HTTP 401, Interceptor kích hoạt cơ chế Refresh Token với `PRN232.AuthAPI`. Nếu thất bại, xóa token và điều hướng người dùng về màn hình đăng nhập qua `GoRouter`.
-
+1. **Lưu Token an toàn:** Access Token và Refresh Token được lưu trong `FlutterSecureStorage`, thông tin cấu hình người dùng (Theme, thông báo) lưu trong `SharedPreferences`.
+2. **Auth Interceptor tự động:** Cấu hình Dio Interceptor tự động đính kèm header `Authorization: Bearer <token>` cho mọi request gọi đến các Micro-API cần xác thực.
+3. **Xử lý 401 Unauthorized:** Khi nhận HTTP 401, tự động kích hoạt cơ chế Refresh Token với `PRN232.AuthAPI`. Nếu thất bại, xóa token và điều hướng về trang đăng nhập.
