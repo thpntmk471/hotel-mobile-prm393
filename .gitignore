@@ -24,3 +24,4 @@ Thumbs.db
 # Ignore SQL Database seed files
 *.sql
 SeedData.sql
+*.ps1
