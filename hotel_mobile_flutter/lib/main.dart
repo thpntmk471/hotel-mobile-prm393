@@ -12,6 +12,10 @@ import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/pages/home_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/room/data/datasources/room_remote_datasource.dart';
+import 'features/room/data/repositories/room_repository_impl.dart';
+import 'features/room/domain/repositories/room_repository.dart';
+import 'features/room/presentation/providers/room_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,14 +35,21 @@ void main() async {
     storageService: storageService,
   );
 
+  final roomRemoteDataSource = RoomRemoteDataSourceImpl(dioClient.dio);
+  final roomRepository = RoomRepositoryImpl(roomRemoteDataSource);
+
   runApp(
     MultiProvider(
       providers: [
         Provider<LocalStorageService>.value(value: storageService),
         Provider<DioClient>.value(value: dioClient),
         Provider<AuthRepository>.value(value: authRepository),
+        Provider<RoomRepository>.value(value: roomRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RoomProvider(roomRepository: roomRepository),
         ),
       ],
       child: const HotelManagementApp(),

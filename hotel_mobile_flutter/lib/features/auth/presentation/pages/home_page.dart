@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../room/presentation/pages/room_list_page.dart';
 import '../providers/auth_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -106,7 +107,11 @@ class HomePage extends StatelessWidget {
               icon: Icons.hotel,
               title: 'Vận hành phòng',
               subtitle: 'Theo dõi danh sách phòng, tình trạng buồng phòng sạch/cần dọn.',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RoomListPage()),
+                );
+              },
             ),
             const SizedBox(height: 12),
 
