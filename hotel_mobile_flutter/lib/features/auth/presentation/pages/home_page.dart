@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../reservation/presentation/pages/reservation_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
+import '../../../stay/presentation/pages/stay_list_page.dart';
 import '../providers/auth_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -124,6 +125,19 @@ class HomePage extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ReservationListPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+
+            _buildActionCard(
+              context,
+              icon: Icons.assignment,
+              title: 'Lễ tân & Lưu trú',
+              subtitle: 'Theo dõi hoạt động check-in, chi tiết hóa đơn và check-out trả phòng.',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const StayListPage()),
                 );
               },
             ),

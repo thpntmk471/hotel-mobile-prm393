@@ -20,6 +20,10 @@ import 'features/room/data/datasources/room_remote_datasource.dart';
 import 'features/room/data/repositories/room_repository_impl.dart';
 import 'features/room/domain/repositories/room_repository.dart';
 import 'features/room/presentation/providers/room_provider.dart';
+import 'features/stay/data/datasources/stay_remote_datasource.dart';
+import 'features/stay/data/repositories/stay_repository_impl.dart';
+import 'features/stay/domain/repositories/stay_repository.dart';
+import 'features/stay/presentation/providers/stay_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +51,9 @@ void main() async {
   final reservationRepository =
       ReservationRepositoryImpl(reservationRemoteDataSource);
 
+  final stayRemoteDataSource = StayRemoteDataSourceImpl(dioClient.dio);
+  final stayRepository = StayRepositoryImpl(stayRemoteDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -55,6 +62,7 @@ void main() async {
         Provider<AuthRepository>.value(value: authRepository),
         Provider<RoomRepository>.value(value: roomRepository),
         Provider<ReservationRepository>.value(value: reservationRepository),
+        Provider<StayRepository>.value(value: stayRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
         ),
@@ -64,6 +72,9 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) =>
               ReservationProvider(reservationRepository: reservationRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => StayProvider(stayRepository: stayRepository),
         ),
       ],
       child: const HotelManagementApp(),
