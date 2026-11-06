@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../reservation/presentation/pages/booking_page.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
 
@@ -216,10 +217,9 @@ class _RoomListPageState extends State<RoomListPage> {
                         );
                       },
                       onBookNow: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Chuyển tới đặt phòng ${room.roomNumber}'),
-                            duration: const Duration(seconds: 1),
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BookingPage(initialRoom: room),
                           ),
                         );
                       },

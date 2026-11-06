@@ -16,9 +16,9 @@ Tài liệu này dùng để theo dõi **từng bước triển khai (Step-by-St
 | **02** | **Core Foundation & Theme** | Theme Deep Emerald Green `#1B5E4F`, AppColors, DioClient, Storage (Secure + Prefs), Custom Widgets | ✅ **HOÀN THÀNH** | `lib/core/theme/`<br>`lib/core/network/`<br>`lib/core/storage/`<br>`lib/core/widgets/` |
 | **03** | **Auth & Login Dashboard** | Domain/Data/Presentation cho Auth, Màn hình Login (Logo HM), Home Dashboard Lễ tân, Mock Fallback | ✅ **HOÀN THÀNH** | `lib/features/auth/`<br>`lib/main.dart` |
 | **04** | **Quản Lý Vận Hành Phòng (Room)** | Clean Architecture cho Room, Thẻ RoomCard, Bộ lọc ngang, Tìm kiếm Realtime, Nút Báo dọn/Đã sạch | ✅ **HOÀN THÀNH** | `lib/features/room/` |
-| **05** | **Đặt Phòng (Reservation - Booking)** | Form chọn ngày Check-in/Out, validate ngày, tính tổng tiền tự động, tạo đơn đặt phòng mới | ⏳ **TIẾP THEO** | `lib/features/reservation/` |
-| **06** | **Danh Sách Đơn Đặt Phòng** | Xem lịch sử đơn đặt (RSV...), bộ lọc trạng thái (Đã xác nhận, Đã nhận phòng, Đã trả phòng) | 📋 Chờ xử lý | `lib/features/reservation/` |
-| **07** | **Lưu Trú & Check-in / Check-out (Stay)** | Chuyển đổi từ Đơn đặt sang Lưu trú (Stay), xem chi tiết hóa đơn thanh toán tiền phòng | 📋 Chờ xử lý | `lib/features/stay/` |
+| **05** | **Đặt Phòng (Reservation - Booking)** | Form chọn ngày Check-in/Out, validate ngày, tính tổng tiền tự động, tạo đơn đặt phòng mới | ✅ **HOÀN THÀNH** | `lib/features/reservation/` |
+| **06** | **Danh Sách Đơn Đặt Phòng** | Xem lịch sử đơn đặt (RSV...), bộ lọc trạng thái (Đã xác nhận, Đã nhận phòng, Đã trả phòng), Check-in/Out nhanh | ✅ **HOÀN THÀNH** | `lib/features/reservation/` |
+| **07** | **Lưu Trú & Check-in / Check-out (Stay)** | Chuyển đổi từ Đơn đặt sang Lưu trú (Stay), xem chi tiết hóa đơn thanh toán tiền phòng | ⏳ **TIẾP THEO** | `lib/features/stay/` |
 | **08** | **Dịch Vụ Khách Sạn (Hotel Services)** | Menu dịch vụ (Ăn uống, Spa, Giặt là), gọi dịch vụ phòng và cộng vào hóa đơn lưu trú | 📋 Chờ xử lý | `lib/features/hotel_service/` |
 | **09** | **Nhiệm Vụ Dọn Phòng (Housekeeping Task)** | Màn hình dành riêng cho nhân viên buồng phòng nhận phòng bẩn và bấm hoàn thành | 📋 Chờ xử lý | `lib/features/task/` |
 | **10** | **Hồ Sơ & Cài Đặt (Profile & Settings)** | Xem thông tin tài khoản, chuyển đổi Dark/Light mode, Đăng xuất, Lưu trữ cấu hình cục bộ | 📋 Chờ xử lý | `lib/features/profile/` |
@@ -68,3 +68,4 @@ Tài liệu này dùng để theo dõi **từng bước triển khai (Step-by-St
      - Tự động tính số đêm và **Tổng tiền thanh toán** (`Số đêm x Giá phòng/đêm`).
   2. Tạo `ReservationProvider`, `ReservationRepository` lưu đơn đặt phòng mới.
   3. Sau khi đặt thành công, tự động cập nhật danh sách đơn và hiển thị thông báo.
+

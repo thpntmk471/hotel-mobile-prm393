@@ -12,6 +12,10 @@ import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/pages/home_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/reservation/data/datasources/reservation_remote_datasource.dart';
+import 'features/reservation/data/repositories/reservation_repository_impl.dart';
+import 'features/reservation/domain/repositories/reservation_repository.dart';
+import 'features/reservation/presentation/providers/reservation_provider.dart';
 import 'features/room/data/datasources/room_remote_datasource.dart';
 import 'features/room/data/repositories/room_repository_impl.dart';
 import 'features/room/domain/repositories/room_repository.dart';
@@ -38,6 +42,11 @@ void main() async {
   final roomRemoteDataSource = RoomRemoteDataSourceImpl(dioClient.dio);
   final roomRepository = RoomRepositoryImpl(roomRemoteDataSource);
 
+  final reservationRemoteDataSource =
+      ReservationRemoteDataSourceImpl(dioClient.dio);
+  final reservationRepository =
+      ReservationRepositoryImpl(reservationRemoteDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -45,11 +54,16 @@ void main() async {
         Provider<DioClient>.value(value: dioClient),
         Provider<AuthRepository>.value(value: authRepository),
         Provider<RoomRepository>.value(value: roomRepository),
+        Provider<ReservationRepository>.value(value: reservationRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
         ),
         ChangeNotifierProvider(
           create: (_) => RoomProvider(roomRepository: roomRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              ReservationProvider(reservationRepository: reservationRepository),
         ),
       ],
       child: const HotelManagementApp(),

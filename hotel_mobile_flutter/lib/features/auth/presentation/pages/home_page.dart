@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../reservation/presentation/pages/reservation_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
 import '../providers/auth_provider.dart';
 
@@ -120,7 +121,11 @@ class HomePage extends StatelessWidget {
               icon: Icons.calendar_month,
               title: 'Đặt phòng',
               subtitle: 'Theo dõi và xử lý các đơn đặt phòng của khách hàng.',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ReservationListPage()),
+                );
+              },
             ),
             const SizedBox(height: 12),
 
