@@ -5,6 +5,8 @@ import '../../../hotel_service/presentation/pages/service_catalog_page.dart';
 import '../../../reservation/presentation/pages/reservation_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
 import '../../../stay/presentation/pages/stay_list_page.dart';
+import '../../../task/presentation/pages/task_list_page.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 import '../providers/auth_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -20,7 +22,17 @@ class HomePage extends StatelessWidget {
         title: const Text('Tổng quan hệ thống'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.account_circle, color: AppColors.primary),
+            tooltip: 'Hồ sơ & Cài đặt',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout, color: AppColors.textSecondary),
+            tooltip: 'Đăng xuất',
             onPressed: () {
               context.read<AuthProvider>().logout();
             },
@@ -162,7 +174,24 @@ class HomePage extends StatelessWidget {
               icon: Icons.cleaning_services,
               title: 'Quản lý công việc',
               subtitle: 'Phân công và ghi nhận hoàn thành nhiệm vụ dọn buồng phòng.',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const TaskListPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+
+            _buildActionCard(
+              context,
+              icon: Icons.person_outline,
+              title: 'Hồ sơ & Cài đặt',
+              subtitle: 'Thông tin tài khoản, chuyển đổi Dark/Light mode, phiên bản app.',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              },
             ),
           ],
         ),

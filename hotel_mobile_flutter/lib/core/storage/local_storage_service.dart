@@ -38,5 +38,12 @@ class LocalStorageService {
 
   String? getUserName() => _prefs.getString(StorageKeys.userName);
   String? getUserRole() => _prefs.getString(StorageKeys.userRole);
+
+  // Cấu hình giao diện & cài đặt ứng dụng
+  Future<void> setDarkMode(bool isDark) async {
+    await _prefs.setBool(StorageKeys.isDarkMode, isDark);
+  }
+
+  bool isDarkMode() => _prefs.getBool(StorageKeys.isDarkMode) ?? false;
 }
 
