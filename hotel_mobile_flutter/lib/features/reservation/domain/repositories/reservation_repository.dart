@@ -16,3 +16,4 @@ abstract class ReservationRepository {
   });
   Future<void> updateStatus(String reservationId, String newStatus);
 }
+

@@ -74,33 +74,32 @@ class _ReservationListPageState extends State<ReservationListPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  height: 34,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _statuses.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final status = _statuses[index];
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _statuses.map((status) {
                       final isSelected = reservationProvider.selectedStatus == status;
-                      return ChoiceChip(
-                        label: Text(status),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            context.read<ReservationProvider>().setStatusFilter(status),
-                        selectedColor: AppColors.primaryLight,
-                        backgroundColor: AppColors.background,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(status),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              context.read<ReservationProvider>().setStatusFilter(status),
+                          selectedColor: AppColors.primaryLight,
+                          backgroundColor: AppColors.background,
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : AppColors.border,
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
@@ -185,3 +184,4 @@ class _ReservationListPageState extends State<ReservationListPage> {
     );
   }
 }
+

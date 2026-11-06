@@ -77,65 +77,63 @@ class _RoomListPageState extends State<RoomListPage> {
                 const SizedBox(height: 12),
 
                 // Bộ lọc ngang theo Loại phòng
-                SizedBox(
-                  height: 34,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _roomTypes.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final type = _roomTypes[index];
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _roomTypes.map((type) {
                       final isSelected = roomProvider.selectedRoomType == type;
-                      return ChoiceChip(
-                        label: Text(type),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            context.read<RoomProvider>().setRoomTypeFilter(type),
-                        selectedColor: AppColors.primaryLight,
-                        backgroundColor: AppColors.background,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(type),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              context.read<RoomProvider>().setRoomTypeFilter(type),
+                          selectedColor: AppColors.primaryLight,
+                          backgroundColor: AppColors.background,
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : AppColors.border,
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 8),
 
                 // Bộ lọc nhanh theo Tình trạng Buồng phòng
-                SizedBox(
-                  height: 34,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _housekeepingStatuses.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final status = _housekeepingStatuses[index];
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _housekeepingStatuses.map((status) {
                       final isSelected = roomProvider.selectedHousekeeping == status;
-                      return ChoiceChip(
-                        label: Text('Buồng: $status'),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            context.read<RoomProvider>().setHousekeepingFilter(status),
-                        selectedColor: AppColors.primaryLight,
-                        backgroundColor: AppColors.background,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text('Buồng: $status'),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              context.read<RoomProvider>().setHousekeepingFilter(status),
+                          selectedColor: AppColors.primaryLight,
+                          backgroundColor: AppColors.background,
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          side: BorderSide(
+                            color: isSelected ? AppColors.primary : AppColors.border,
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
