@@ -466,19 +466,28 @@ class _StayDetailPageState extends State<StayDetailPage> {
           ),
         );
 
+        // Cập nhật trạng thái phòng sang "Cần dọn" (nếu cần, backend StayAPI đã tự động gọi mark-dirty)
         if (room.id > 0) {
-          await roomProvider.setHousekeepingStatus(room.id, 'Cần dọn');
+          try {
+            await roomProvider.setHousekeepingStatus(room.id, 'Cần dọn', rowVersion: room.rowVersion);
+          } catch (e) {
+            debugPrint('⚠️ [StayDetailPage] manual setHousekeepingStatus notice: $e');
+          }
         }
 
-        // Tạo task buồng phòng
-        await taskProvider.createCleaningTask(
-          roomId: room.id,
-          roomNumber: _stay.roomNumber,
-          floor: room.floor,
-          roomTypeName: _stay.roomTypeName,
-          taskType: 'Dọn phòng sau check-out',
-          priority: 'Cao',
-        );
+        // Tạo task buồng phòng (không chặn hoàn tất trả phòng nếu có lỗi phụ)
+        try {
+          await taskProvider.createCleaningTask(
+            roomId: room.id,
+            roomNumber: _stay.roomNumber,
+            floor: room.floor,
+            roomTypeName: _stay.roomTypeName,
+            taskType: 'Dọn phòng sau check-out',
+            priority: 'Cao',
+          );
+        } catch (e) {
+          debugPrint('⚠️ [StayDetailPage] createCleaningTask notice: $e');
+        }
 
         await _loadStayDetail();
         widget.onCheckOutSuccess?.call();

@@ -52,11 +52,21 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
         hkByte = 4;
       }
 
+      String finalRowVersion = rowVersion;
+      if (finalRowVersion.trim().isEmpty) {
+        try {
+          final res = await dio.get('${ApiConstants.roomService}/$roomId');
+          if (res.data is Map && res.data['rowVersion'] != null) {
+            finalRowVersion = res.data['rowVersion'].toString();
+          }
+        } catch (_) {}
+      }
+
       await dio.patch(
         '${ApiConstants.roomService}/$roomId/status',
         data: {
           'housekeepingStatus': hkByte,
-          'rowVersion': rowVersion,
+          'rowVersion': finalRowVersion,
         },
       );
     } catch (e) {
