@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../room/presentation/providers/room_provider.dart';
 import '../../domain/entities/housekeeping_task.dart';
 import '../providers/task_provider.dart';
 
@@ -21,18 +22,188 @@ class _TaskListPageState extends State<TaskListPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskProvider>().fetchTasks();
+      context.read<RoomProvider>().fetchRooms();
     });
+  }
+
+  void _showCreateTaskDialog(BuildContext context) {
+    final roomProvider = context.read<RoomProvider>();
+    final rooms = roomProvider.rooms;
+
+    int? selectedRoomId = rooms.isNotEmpty ? rooms.first.id : null;
+    String selectedTaskType = 'Dọn phòng sau check-out';
+    String selectedPriority = 'Cao';
+    final descCtrl = TextEditingController();
+
+    final taskTypes = [
+      'Dọn phòng sau check-out',
+      'Dọn phòng định kỳ',
+      'Kiểm tra phòng',
+      'Bảo trì / Sửa chữa thiết bị',
+    ];
+
+    final priorities = ['Bình thường', 'Cao', 'Khẩn cấp', 'Thấp'];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.cleaning_services, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text('Giao việc buồng phòng', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Chọn phòng cần xử lý *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<int>(
+                  initialValue: selectedRoomId,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  hint: const Text('Chọn phòng...'),
+                  items: rooms.map((r) {
+                    return DropdownMenuItem<int>(
+                      value: r.id,
+                      child: Text('Phòng ${r.roomNumber} (${r.roomTypeName})'),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => selectedRoomId = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Text('Loại công việc *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedTaskType,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: taskTypes.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => selectedTaskType = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Text('Mức độ ưu tiên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedPriority,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: priorities.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => selectedPriority = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Text('Ghi chú chi tiết', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: descCtrl,
+                  decoration: const InputDecoration(
+                    hintText: 'Nhập ghi chú hoặc yêu cầu đặc biệt...',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () async {
+                if (selectedRoomId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Vui lòng chọn phòng'), backgroundColor: AppColors.error),
+                  );
+                  return;
+                }
+                final chosenRoom = rooms.firstWhere((r) => r.id == selectedRoomId);
+                Navigator.pop(ctx);
+                try {
+                  final auth = context.read<AuthProvider>();
+                  await context.read<TaskProvider>().createCleaningTask(
+                    roomId: chosenRoom.id,
+                    roomNumber: chosenRoom.roomNumber,
+                    floor: chosenRoom.floor,
+                    roomTypeName: chosenRoom.roomTypeName,
+                    taskType: selectedTaskType,
+                    priority: selectedPriority,
+                    description: descCtrl.text.trim(),
+                    createdByAccountId: auth.currentUserId,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Đã tạo nhiệm vụ "$selectedTaskType" cho phòng ${chosenRoom.roomNumber}!'),
+                        backgroundColor: AppColors.statusActiveText,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Lỗi tạo nhiệm vụ: $e'), backgroundColor: AppColors.error),
+                    );
+                  }
+                }
+              },
+              child: const Text('Tạo việc', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final taskProvider = context.watch<TaskProvider>();
-    final currentStaff = context.watch<AuthProvider>().session?.fullName ?? 'Buồng phòng Demo';
+    final auth = context.watch<AuthProvider>();
+    final currentStaff = auth.session?.fullName ?? 'Buồng phòng Demo';
+    final currentAccountId = auth.currentUserId;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Quản lý Buồng phòng & Tác vụ'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => context.read<TaskProvider>().fetchTasks(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_task),
+        label: const Text('Tạo nhiệm vụ', style: TextStyle(fontWeight: FontWeight.bold)),
+        onPressed: () => _showCreateTaskDialog(context),
       ),
       body: Column(
         children: [
@@ -101,11 +272,11 @@ class _TaskListPageState extends State<TaskListPage> {
                 return RefreshIndicator(
                   onRefresh: () => context.read<TaskProvider>().fetchTasks(),
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
                     itemCount: taskProvider.tasks.length,
                     itemBuilder: (context, index) {
                       final t = taskProvider.tasks[index];
-                      return _buildTaskCard(context, t, currentStaff);
+                      return _buildTaskCard(context, t, currentStaff, currentAccountId);
                     },
                   ),
                 );
@@ -117,9 +288,9 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, HousekeepingTask task, String currentStaff) {
+  Widget _buildTaskCard(BuildContext context, HousekeepingTask task, String currentStaff, int currentAccountId) {
     Color priorityColor = Colors.orange;
-    if (task.priority == 'Cao') priorityColor = Colors.red;
+    if (task.priority == 'Cao' || task.priority == 'Khẩn cấp') priorityColor = Colors.red;
     if (task.priority == 'Thấp') priorityColor = Colors.blue;
 
     return Container(
@@ -143,10 +314,15 @@ class _TaskListPageState extends State<TaskListPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Phòng ${task.roomNumber} (Tầng ${task.floor})',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              Expanded(
+                child: Text(
+                  'Phòng ${task.roomNumber} (Tầng ${task.floor})',
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -163,7 +339,7 @@ class _TaskListPageState extends State<TaskListPage> {
           const SizedBox(height: 6),
           Text(task.taskType, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
           Text('Loại phòng: ${task.roomTypeName}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-          if (task.assignedStaff != null) ...[
+          if (task.assignedStaff != null && task.assignedStaff!.isNotEmpty) ...[
             const SizedBox(height: 4),
             Row(
               children: [
@@ -206,7 +382,12 @@ class _TaskListPageState extends State<TaskListPage> {
                 ElevatedButton(
                   onPressed: () async {
                     try {
-                      await context.read<TaskProvider>().acceptTask(task.id, currentStaff);
+                      await context.read<TaskProvider>().acceptTask(
+                            task.id,
+                            currentStaff,
+                            rowVersion: task.rowVersion,
+                            accountId: currentAccountId,
+                          );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -237,7 +418,12 @@ class _TaskListPageState extends State<TaskListPage> {
                 ElevatedButton(
                   onPressed: () async {
                     try {
-                      await context.read<TaskProvider>().completeTask(task.id);
+                      await context.read<TaskProvider>().completeTask(
+                            task.id,
+                            staffName: currentStaff,
+                            rowVersion: task.rowVersion,
+                            accountId: currentAccountId,
+                          );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

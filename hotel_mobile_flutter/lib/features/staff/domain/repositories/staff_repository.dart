@@ -37,3 +37,4 @@ abstract class StaffRepository {
     required bool isActive,
   });
 }
+

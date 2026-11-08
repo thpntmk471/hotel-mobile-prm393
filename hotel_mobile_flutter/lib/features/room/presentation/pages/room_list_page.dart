@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../reservation/presentation/pages/booking_page.dart';
 import '../../../room_type/presentation/pages/room_type_list_page.dart';
+import '../../../task/presentation/pages/task_list_page.dart';
 import '../../domain/entities/room.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
@@ -204,6 +205,16 @@ class _RoomListPageState extends State<RoomListPage> {
       appBar: AppBar(
         title: const Text('Vận hành phòng'),
         actions: [
+          IconButton(
+            tooltip: 'Nhiệm vụ buồng phòng',
+            icon: const Icon(Icons.cleaning_services_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TaskListPage()),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: OutlinedButton.icon(

@@ -38,13 +38,18 @@ class TaskProvider extends ChangeNotifier {
     fetchTasks();
   }
 
-  Future<void> acceptTask(int taskId, String staffName) async {
-    await taskRepository.acceptTask(taskId, staffName);
+  Future<void> acceptTask(int taskId, String staffName, {String? rowVersion, int? accountId}) async {
+    await taskRepository.acceptTask(taskId, staffName, rowVersion: rowVersion, accountId: accountId);
     await fetchTasks();
   }
 
-  Future<void> completeTask(int taskId) async {
-    await taskRepository.completeTask(taskId);
+  Future<void> completeTask(int taskId, {String? staffName, String? rowVersion, int? accountId}) async {
+    await taskRepository.completeTask(taskId, staffName: staffName, rowVersion: rowVersion, accountId: accountId);
+    await fetchTasks();
+  }
+
+  Future<void> assignTask(int taskId, int staffAccountId, {String? rowVersion}) async {
+    await taskRepository.assignTask(taskId, staffAccountId, rowVersion: rowVersion);
     await fetchTasks();
   }
 
@@ -55,6 +60,9 @@ class TaskProvider extends ChangeNotifier {
     required String roomTypeName,
     String taskType = 'Dọn phòng sau check-out',
     String priority = 'Cao',
+    String? description,
+    int? assignedToAccountId,
+    int? createdByAccountId,
   }) async {
     try {
       await taskRepository.createCleaningTask(
@@ -64,9 +72,14 @@ class TaskProvider extends ChangeNotifier {
         roomTypeName: roomTypeName,
         taskType: taskType,
         priority: priority,
+        description: description,
+        assignedToAccountId: assignedToAccountId,
+        createdByAccountId: createdByAccountId,
       );
       await fetchTasks();
-    } catch (_) {}
+    } catch (_) {
+      rethrow;
+    }
   }
 }
 

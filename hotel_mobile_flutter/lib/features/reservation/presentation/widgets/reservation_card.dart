@@ -55,21 +55,28 @@ class ReservationCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.bookmark, size: 16, color: AppColors.primary),
-                    const SizedBox(width: 6),
-                    Text(
-                      reservation.id,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        letterSpacing: 0.5,
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bookmark, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          reservation.id,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 StatusChip(label: reservation.status),
               ],
             ),

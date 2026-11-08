@@ -22,13 +22,30 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> acceptTask(int taskId, String staffName) async {
-    await remoteDataSource.updateTaskStatus(taskId, 'Đang dọn', staffName: staffName);
+  Future<void> acceptTask(int taskId, String staffName, {String? rowVersion, int? accountId}) async {
+    await remoteDataSource.updateTaskStatus(
+      taskId,
+      'Đang dọn',
+      staffName: staffName,
+      rowVersion: rowVersion,
+      accountId: accountId,
+    );
   }
 
   @override
-  Future<void> completeTask(int taskId) async {
-    await remoteDataSource.updateTaskStatus(taskId, 'Hoàn thành');
+  Future<void> completeTask(int taskId, {String? staffName, String? rowVersion, int? accountId}) async {
+    await remoteDataSource.updateTaskStatus(
+      taskId,
+      'Hoàn thành',
+      staffName: staffName,
+      rowVersion: rowVersion,
+      accountId: accountId,
+    );
+  }
+
+  @override
+  Future<void> assignTask(int taskId, int staffAccountId, {String? rowVersion}) async {
+    await remoteDataSource.assignTask(taskId, staffAccountId, rowVersion: rowVersion);
   }
 
   @override
@@ -39,14 +56,29 @@ class TaskRepositoryImpl implements TaskRepository {
     required String roomTypeName,
     required String taskType,
     required String priority,
+    String? description,
+    int? assignedToAccountId,
+    int? createdByAccountId,
   }) async {
+    int priorityVal = 2;
+    if (priority == 'Khẩn cấp') {
+      priorityVal = 4;
+    } else if (priority == 'Cao') {
+      priorityVal = 3;
+    } else if (priority == 'Thấp') {
+      priorityVal = 1;
+    }
+
     final payload = {
       'roomId': roomId,
       'roomNumber': roomNumber,
       'floor': floor,
       'roomTypeName': roomTypeName,
       'taskType': taskType,
-      'priority': priority,
+      'priority': priorityVal,
+      'description': description,
+      'assignedToAccountId': assignedToAccountId,
+      'createdByAccountId': createdByAccountId,
     };
     final model = await remoteDataSource.createTask(payload);
     return model.toEntity();

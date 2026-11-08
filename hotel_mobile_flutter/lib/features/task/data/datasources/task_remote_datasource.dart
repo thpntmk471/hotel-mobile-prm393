@@ -4,7 +4,14 @@ import '../models/housekeeping_task_model.dart';
 
 abstract class TaskRemoteDataSource {
   Future<List<HousekeepingTaskModel>> fetchTasks();
-  Future<void> updateTaskStatus(int taskId, String status, {String? staffName});
+  Future<void> updateTaskStatus(
+    int taskId,
+    String status, {
+    String? staffName,
+    String? rowVersion,
+    int? accountId,
+  });
+  Future<void> assignTask(int taskId, int staffAccountId, {String? rowVersion});
   Future<HousekeepingTaskModel> createTask(Map<String, dynamic> payload);
 }
 
@@ -12,6 +19,17 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   final Dio dio;
 
   TaskRemoteDataSourceImpl(this.dio);
+
+  Future<String> _ensureRowVersion(int taskId, String? rowVersion) async {
+    if (rowVersion != null && rowVersion.isNotEmpty) return rowVersion;
+    try {
+      final res = await dio.get('${ApiConstants.taskService}/$taskId');
+      if (res.data is Map) {
+        return (res.data['rowVersion'] ?? res.data['RowVersion'] ?? '').toString();
+      }
+    } catch (_) {}
+    return '';
+  }
 
   @override
   Future<List<HousekeepingTaskModel>> fetchTasks() async {
@@ -35,13 +53,25 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   }
 
   @override
-  Future<void> updateTaskStatus(int taskId, String status, {String? staffName}) async {
+  Future<void> updateTaskStatus(
+    int taskId,
+    String status, {
+    String? staffName,
+    String? rowVersion,
+    int? accountId,
+  }) async {
     try {
+      final rv = await _ensureRowVersion(taskId, rowVersion);
+
       if (status == 'Đang dọn' || status == 'InProgress') {
         // Backend: PUT /api/hotel-tasks/{id}/progress với status = 3 (Bắt đầu dọn)
         await dio.put(
           '${ApiConstants.taskService}/$taskId/progress',
-          data: {'status': 3},
+          data: {
+            'status': 3,
+            'notes': 'Nhân viên bắt đầu dọn phòng qua Mobile App',
+            'rowVersion': rv,
+          },
         );
       } else if (status == 'Hoàn thành' || status == 'Completed') {
         // Backend: POST /api/hotel-tasks/{id}/complete
@@ -49,6 +79,8 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           '${ApiConstants.taskService}/$taskId/complete',
           data: {
             'completionNotes': 'Hoàn thành dọn phòng qua Mobile App bởi ${staffName ?? "Nhân viên"}',
+            'completedByAccountId': accountId ?? 1,
+            'rowVersion': rv,
           },
         );
       }
@@ -60,6 +92,24 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   }
 
   @override
+  Future<void> assignTask(int taskId, int staffAccountId, {String? rowVersion}) async {
+    try {
+      final rv = await _ensureRowVersion(taskId, rowVersion);
+      await dio.put(
+        '${ApiConstants.taskService}/$taskId/assign',
+        data: {
+          'assignedToAccountId': staffAccountId,
+          'rowVersion': rv,
+        },
+      );
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [TaskRemoteDataSource] assignTask error: $e');
+      throw Exception('Lỗi phân công nhân viên: $e');
+    }
+  }
+
+  @override
   Future<HousekeepingTaskModel> createTask(Map<String, dynamic> payload) async {
     try {
       // Backend: POST /api/hotel-tasks/housekeeping
@@ -67,11 +117,12 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
         '${ApiConstants.taskService}/housekeeping',
         data: {
           'roomId': payload['roomId'] ?? 1,
-          'housekeepingKind': 1, // 1: Dọn phòng
-          'title': payload['taskType'] ?? 'Dọn phòng sau check-out',
-          'description': 'Nhiệm vụ dọn dẹp vệ sinh phòng ${payload['roomNumber']} tạo từ Mobile App',
-          'priority': 2, // 2: Trung bình
-          'createdByAccountId': payload['createdByAccountId'] ?? 2,
+          'housekeepingKind': payload['housekeepingKind'] ?? 1, // 1: Dọn phòng, 2: Kiểm tra
+          'title': payload['taskType'] ?? payload['title'] ?? 'Dọn phòng',
+          'description': payload['description'] ?? 'Nhiệm vụ dọn dẹp vệ sinh phòng ${payload['roomNumber'] ?? ""} tạo từ Mobile App',
+          'priority': payload['priority'] is int ? payload['priority'] : 2, // 1: Thấp, 2: Trung bình, 3: Cao, 4: Khẩn cấp
+          'assignedToAccountId': payload['assignedToAccountId'],
+          'createdByAccountId': payload['createdByAccountId'] ?? 1,
         },
       );
       return HousekeepingTaskModel.fromJson(res.data as Map<String, dynamic>);

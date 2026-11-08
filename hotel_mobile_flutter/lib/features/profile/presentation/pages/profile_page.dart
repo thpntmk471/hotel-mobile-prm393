@@ -6,6 +6,7 @@ import '../../../guest/presentation/pages/guest_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
 import '../../../room_type/presentation/pages/room_type_list_page.dart';
 import '../../../staff/presentation/pages/staff_list_page.dart';
+import '../../../task/presentation/pages/task_list_page.dart';
 import '../providers/profile_provider.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -238,6 +239,19 @@ class ProfilePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const GuestListPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.cleaning_services_outlined, color: Color(0xFF059669)),
+                    title: const Text('Quản lý Công Việc (Tasks)'),
+                    subtitle: const Text('Nhiệm vụ buồng phòng, vệ sinh và sửa chữa'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const TaskListPage()),
                       );
                     },
                   ),

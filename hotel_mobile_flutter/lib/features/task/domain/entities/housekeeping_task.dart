@@ -9,6 +9,8 @@ class HousekeepingTask {
   final String priority; // Cao, Trung bình, Thấp
   final String status; // Chờ nhận, Đang dọn, Hoàn thành
   final String? assignedStaff;
+  final int? assignedToAccountId;
+  final String rowVersion;
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -23,11 +25,13 @@ class HousekeepingTask {
     required this.priority,
     required this.status,
     this.assignedStaff,
+    this.assignedToAccountId,
+    this.rowVersion = '',
     required this.createdAt,
     this.completedAt,
   });
 
-  bool get isPending => status == 'Chờ nhận';
+  bool get isPending => status == 'Chờ nhận' || status == 'Đã nhận';
   bool get isInProgress => status == 'Đang dọn';
   bool get isDone => status == 'Hoàn thành';
 }

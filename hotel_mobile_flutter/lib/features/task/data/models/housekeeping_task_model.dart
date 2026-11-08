@@ -11,6 +11,8 @@ class HousekeepingTaskModel {
   final String priority;
   final String status;
   final String? assignedStaff;
+  final int? assignedToAccountId;
+  final String rowVersion;
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -25,6 +27,8 @@ class HousekeepingTaskModel {
     required this.priority,
     required this.status,
     this.assignedStaff,
+    this.assignedToAccountId,
+    this.rowVersion = '',
     required this.createdAt,
     this.completedAt,
   });
@@ -37,6 +41,9 @@ class HousekeepingTaskModel {
     final rNumber = json['roomNumber'] ?? json['RoomNumber'] ?? 'DEV-$rId';
     final typeName = json['roomTypeName'] ?? json['RoomTypeName'] ?? 'Phòng Tiêu chuẩn';
     final tType = json['taskTypeName'] ?? json['title'] ?? json['Title'] ?? 'Dọn dẹp phòng';
+    final rowVer = json['rowVersion'] ?? json['RowVersion'] ?? '';
+    final rawAssignedTo = json['assignedToAccountId'] ?? json['AssignedToAccountId'];
+    final assignedToId = rawAssignedTo is int ? rawAssignedTo : int.tryParse(rawAssignedTo?.toString() ?? '');
 
     // Ánh xạ trạng thái byte của .NET TaskAPI
     // 1: Pending (Chờ nhận), 2: Assigned (Đã nhận), 3: InProgress (Đang dọn), 4: Completed (Hoàn thành), 5: Cancelled (Đã hủy)
@@ -81,6 +88,8 @@ class HousekeepingTaskModel {
       priority: pName.toString(),
       status: statusStr,
       assignedStaff: json['assignedStaff']?.toString() ?? json['assignedToName']?.toString(),
+      assignedToAccountId: assignedToId,
+      rowVersion: rowVer.toString(),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
       completedAt: json['completedAt'] != null ? DateTime.tryParse(json['completedAt'].toString()) : null,
     );
@@ -97,6 +106,8 @@ class HousekeepingTaskModel {
         priority: priority,
         status: status,
         assignedStaff: assignedStaff,
+        assignedToAccountId: assignedToAccountId,
+        rowVersion: rowVersion,
         createdAt: createdAt,
         completedAt: completedAt,
       );

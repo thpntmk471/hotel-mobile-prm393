@@ -154,10 +154,15 @@ class _StayListPageState extends State<StayListPage> {
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Phòng ${stay.roomNumber} • ${stay.stayCode}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            Expanded(
+                              child: Text(
+                                'Phòng ${stay.roomNumber} • ${stay.stayCode}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
