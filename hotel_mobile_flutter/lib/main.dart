@@ -44,6 +44,10 @@ import 'features/guest/data/datasources/guest_remote_datasource.dart';
 import 'features/guest/data/repositories/guest_repository_impl.dart';
 import 'features/guest/domain/repositories/guest_repository.dart';
 import 'features/guest/presentation/providers/guest_provider.dart';
+import 'features/staff/data/datasources/staff_remote_datasource.dart';
+import 'features/staff/data/repositories/staff_repository_impl.dart';
+import 'features/staff/domain/repositories/staff_repository.dart';
+import 'features/staff/presentation/providers/staff_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +72,9 @@ void main() async {
 
   final guestRemoteDataSource = GuestRemoteDataSourceImpl(dioClient.dio);
   final guestRepository = GuestRepositoryImpl(guestRemoteDataSource);
+
+  final staffRemoteDataSource = StaffRemoteDataSourceImpl(dioClient.dio);
+  final staffRepository = StaffRepositoryImpl(staffRemoteDataSource);
 
   final reservationRemoteDataSource =
       ReservationRemoteDataSourceImpl(dioClient.dio);
@@ -112,6 +119,7 @@ void main() async {
         Provider<TaskRepository>.value(value: taskRepository),
         Provider<RoomTypeRepository>.value(value: roomTypeRepository),
         Provider<GuestRepository>.value(value: guestRepository),
+        Provider<StaffRepository>.value(value: staffRepository),
         Provider<ProfileRepository>.value(value: profileRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
@@ -124,6 +132,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => GuestProvider(guestRepository: guestRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => StaffProvider(staffRepository: staffRepository),
         ),
         ChangeNotifierProvider(
           create: (_) =>

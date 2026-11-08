@@ -8,6 +8,7 @@ import '../../../reservation/presentation/pages/booking_page.dart';
 import '../../../reservation/presentation/providers/reservation_provider.dart';
 import '../../../room/presentation/providers/room_provider.dart';
 import '../../../room_type/presentation/pages/room_type_list_page.dart';
+import '../../../staff/presentation/pages/staff_list_page.dart';
 import '../../../stay/presentation/pages/stay_detail_page.dart';
 import '../../../stay/presentation/providers/stay_provider.dart';
 import '../../../task/presentation/pages/task_list_page.dart';
@@ -402,17 +403,29 @@ class HomePage extends StatelessWidget {
                         ),
                         _buildQuickAction(
                           context,
-                          icon: Icons.meeting_room,
-                          label: 'Quản lý phòng',
-                          color: AppColors.primary,
-                          onTap: () => onNavigateTab?.call(1),
+                          icon: Icons.badge_outlined,
+                          label: 'Nhân viên',
+                          color: const Color(0xFF6366F1),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const StaffListPage(),
+                              ),
+                            );
+                          },
                         ),
                         _buildQuickAction(
                           context,
-                          icon: Icons.manage_accounts,
-                          label: 'Hồ sơ',
+                          icon: Icons.room_service_outlined,
+                          label: 'Dịch vụ',
                           color: const Color(0xFF7C3AED),
-                          onTap: () => onNavigateTab?.call(isHousekeeping ? 3 : 4),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ServiceCatalogPage(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

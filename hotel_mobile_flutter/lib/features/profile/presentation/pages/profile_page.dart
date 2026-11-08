@@ -5,6 +5,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../guest/presentation/pages/guest_list_page.dart';
 import '../../../room/presentation/pages/room_list_page.dart';
 import '../../../room_type/presentation/pages/room_type_list_page.dart';
+import '../../../staff/presentation/pages/staff_list_page.dart';
 import '../providers/profile_provider.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -237,6 +238,19 @@ class ProfilePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const GuestListPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.badge_outlined, color: Color(0xFF6366F1)),
+                    title: const Text('Quản lý Nhân Viên (Staff)'),
+                    subtitle: const Text('Tài khoản, vai trò và trạng thái nhân viên'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const StaffListPage()),
                       );
                     },
                   ),
