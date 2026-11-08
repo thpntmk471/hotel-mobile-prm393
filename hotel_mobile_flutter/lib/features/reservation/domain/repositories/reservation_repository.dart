@@ -16,6 +16,6 @@ abstract class ReservationRepository {
     required int numberOfGuests,
     int? createdByAccountId,
   });
-  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''});
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = '', String? reason});
 }
 

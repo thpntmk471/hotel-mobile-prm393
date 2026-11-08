@@ -20,6 +20,8 @@ class AppColors {
 
   static const Color statusWarningBg = Color(0xFFFEF3C7);
   static const Color statusWarningText = Color(0xFFB45309);
+  static const Color statusPendingBg = statusWarningBg;
+  static const Color statusPendingText = statusWarningText;
 
   static const Color statusBlueBg = Color(0xFFDBEAFE);
   static const Color statusBlueText = Color(0xFF1D4ED8);

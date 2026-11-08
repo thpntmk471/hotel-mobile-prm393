@@ -5,7 +5,7 @@ import '../models/reservation_model.dart';
 abstract class ReservationRemoteDataSource {
   Future<List<ReservationModel>> fetchReservations();
   Future<ReservationModel> createReservation(Map<String, dynamic> payload);
-  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''});
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = '', String? reason});
 }
 
 class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
@@ -66,18 +66,27 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   }
 
   @override
-  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''}) async {
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = '', String? reason}) async {
     try {
       final idNum = int.tryParse(reservationId);
       if (idNum != null && (newStatus == 'Đã hủy' || newStatus == 'Cancelled')) {
         await dio.post(
           '${ApiConstants.reservationService}/$idNum/cancel',
           data: {
-            'reason': 'Khách yêu cầu hủy qua ứng dụng Mobile',
+            'reason': (reason != null && reason.trim().isNotEmpty) ? reason.trim() : 'Khách yêu cầu hủy qua ứng dụng Mobile',
             'rowVersion': rowVersion,
           },
         );
       }
+    } on DioException catch (e) {
+      // ignore: avoid_print
+      print('❌ [ReservationRemoteDataSource] updateStatus DioException: ${e.response?.data}');
+      String msg = 'Lỗi cập nhật trạng thái đơn đặt.';
+      if (e.response?.data is Map) {
+        final d = e.response!.data as Map;
+        msg = d['message']?.toString() ?? d['title']?.toString() ?? msg;
+      }
+      throw Exception(msg);
     } catch (e) {
       // ignore: avoid_print
       print('❌ [ReservationRemoteDataSource] updateStatus error: $e');

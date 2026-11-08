@@ -18,6 +18,8 @@ class AuthProvider extends ChangeNotifier {
 
   AuthStatus get status => _status;
   UserSession? get session => _session;
+  UserSession? get user => _session;
+  int get currentUserId => _session?.userId ?? 2;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _status == AuthStatus.authenticated;

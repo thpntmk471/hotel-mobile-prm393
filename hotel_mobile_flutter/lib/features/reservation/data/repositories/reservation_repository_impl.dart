@@ -147,7 +147,7 @@ class ReservationRepositoryImpl implements ReservationRepository {
   }
 
   @override
-  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''}) async {
-    await remoteDataSource.updateStatus(reservationId, newStatus, rowVersion: rowVersion);
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = '', String? reason}) async {
+    await remoteDataSource.updateStatus(reservationId, newStatus, rowVersion: rowVersion, reason: reason);
   }
 }

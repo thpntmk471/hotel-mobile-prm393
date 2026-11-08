@@ -14,7 +14,7 @@ class StayListPage extends StatefulWidget {
 
 class _StayListPageState extends State<StayListPage> {
   final _searchController = TextEditingController();
-  final List<String> _statuses = ['Tất cả', 'Đang lưu trú', 'Đã hoàn tất'];
+  final List<String> _statuses = ['Tất cả', 'Đang lưu trú', 'Đã trả phòng'];
 
   @override
   void initState() {
@@ -192,18 +192,16 @@ class _StayListPageState extends State<StayListPage> {
                             ),
                           ],
                         ),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => StayDetailPage(
-                                stay: stay,
-                                onCheckOutSuccess: () {
-                                  context.read<StayProvider>().checkOutAndPay(stay.id, 'Tiền mặt');
-                                },
-                              ),
+                              builder: (_) => StayDetailPage(stay: stay),
                             ),
                           );
+                          if (context.mounted) {
+                            context.read<StayProvider>().fetchStays();
+                          }
                         },
                       ),
                     ),

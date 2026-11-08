@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../guest/presentation/pages/guest_list_page.dart';
+import '../../../stay/presentation/providers/stay_provider.dart';
 import '../providers/reservation_provider.dart';
 import '../widgets/reservation_card.dart';
 import 'booking_page.dart';
@@ -209,29 +211,71 @@ class _ReservationListPageState extends State<ReservationListPage> {
                       final res = reservationProvider.reservations[index];
                       return ReservationCard(
                         reservation: res,
-                        onCheckIn: () async {
-                          try {
-                            await context
-                                .read<ReservationProvider>()
-                                .updateStatus(res.id, 'Đã nhận phòng', rowVersion: res.rowVersion);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Đã nhận phòng cho đơn ${res.id}'),
-                                  backgroundColor: AppColors.statusActiveText,
+                        onCheckIn: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Xác nhận nhận phòng'),
+                              content: Text(
+                                'Xác nhận khách ${res.guestName} nhận phòng ${res.roomNumber}?\n\n'
+                                'Hệ thống sẽ cập nhật trạng thái đơn sang "Đã nhận phòng", đồng thời kích hoạt lượt lưu trú tại phòng.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Để sau'),
                                 ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Lỗi nhận phòng: $e'),
-                                  backgroundColor: AppColors.statusOccupiedText,
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                                  onPressed: () async {
+                                    Navigator.pop(ctx);
+                                    try {
+                                      final auth = context.read<AuthProvider>();
+                                      final accountId = auth.currentUserId;
+                                      final stayProv = context.read<StayProvider>();
+                                      final resProv = context.read<ReservationProvider>();
+                                      final success = await stayProv.checkIn(
+                                        reservationId: res.numericId,
+                                        accountId: accountId,
+                                        notes: 'Nhận phòng tại quầy cho ${res.guestName}',
+                                      );
+
+                                      if (context.mounted) {
+                                        if (success) {
+                                          await resProv.fetchReservations();
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Nhận phòng thành công cho khách ${res.guestName} (phòng ${res.roomNumber})!'),
+                                                backgroundColor: AppColors.statusActiveText,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(stayProv.errorMessage ?? 'Không thể nhận phòng.'),
+                                              backgroundColor: AppColors.error,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Lỗi nhận phòng: $e'),
+                                            backgroundColor: AppColors.error,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: const Text('Nhận phòng ngay', style: TextStyle(color: Colors.white)),
                                 ),
-                              );
-                            }
-                          }
+                              ],
+                            ),
+                          );
                         },
                         onCheckOut: () async {
                           try {
@@ -257,11 +301,29 @@ class _ReservationListPageState extends State<ReservationListPage> {
                           }
                         },
                         onCancel: () {
+                          final reasonController = TextEditingController(text: 'Khách yêu cầu hủy');
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
                               title: const Text('Xác nhận hủy đặt phòng'),
-                              content: Text('Bạn có chắc muốn hủy đơn đặt phòng ${res.id} của khách ${res.guestName}?'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Bạn có chắc muốn hủy đơn đặt phòng #${res.id} của khách ${res.guestName}?'),
+                                  const SizedBox(height: 12),
+                                  const Text('Lý do hủy đơn *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: reasonController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Nhập lý do hủy...',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
@@ -270,15 +332,28 @@ class _ReservationListPageState extends State<ReservationListPage> {
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusOccupiedText),
                                   onPressed: () async {
+                                    final reason = reasonController.text.trim();
+                                    if (reason.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Vui lòng nhập lý do hủy đặt phòng'),
+                                          backgroundColor: AppColors.error,
+                                        ),
+                                      );
+                                      return;
+                                    }
                                     Navigator.pop(ctx);
                                     try {
-                                      await context
-                                          .read<ReservationProvider>()
-                                          .updateStatus(res.id, 'Đã hủy', rowVersion: res.rowVersion);
+                                      await context.read<ReservationProvider>().updateStatus(
+                                            res.numericId.toString(),
+                                            'Đã hủy',
+                                            rowVersion: res.rowVersion,
+                                            reason: reason,
+                                          );
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
-                                            content: Text('Đã hủy thành công đơn đặt phòng ${res.id}!'),
+                                            content: Text('Đã hủy thành công đơn đặt phòng #${res.id}!'),
                                             backgroundColor: AppColors.statusOccupiedText,
                                           ),
                                         );

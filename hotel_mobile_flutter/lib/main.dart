@@ -78,7 +78,12 @@ void main() async {
   );
 
   final stayRemoteDataSource = StayRemoteDataSourceImpl(dioClient.dio);
-  final stayRepository = StayRepositoryImpl(stayRemoteDataSource);
+  final stayRepository = StayRepositoryImpl(
+    stayRemoteDataSource,
+    roomRemoteDataSource: roomRemoteDataSource,
+    reservationRemoteDataSource: reservationRemoteDataSource,
+    guestRemoteDataSource: guestRemoteDataSource,
+  );
 
   final hotelServiceRemoteDataSource =
       HotelServiceRemoteDataSourceImpl(dioClient.dio);
