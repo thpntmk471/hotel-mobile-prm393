@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../reservation/presentation/pages/booking_page.dart';
+import '../../../room_type/presentation/pages/room_type_list_page.dart';
 import '../../domain/entities/room.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
@@ -203,6 +204,25 @@ class _RoomListPageState extends State<RoomListPage> {
       appBar: AppBar(
         title: const Text('Vận hành phòng'),
         actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white70),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RoomTypeListPage()),
+                );
+              },
+              icon: const Icon(Icons.category, size: 16),
+              label: const Text('Loại phòng', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => context.read<RoomProvider>().fetchRooms(),

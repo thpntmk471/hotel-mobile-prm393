@@ -51,3 +51,4 @@ class GuestModel {
         rowVersion: rowVersion,
       );
 }
+

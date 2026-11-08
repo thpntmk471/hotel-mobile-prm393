@@ -53,3 +53,4 @@ class RoomTypeModel {
         rowVersion: rowVersion,
       );
 }
+

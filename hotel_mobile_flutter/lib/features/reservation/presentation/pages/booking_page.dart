@@ -589,9 +589,7 @@ class _BookingPageState extends State<BookingPage> {
       if (guestId == null) {
         final name = _nameController.text.trim();
         final phone = _phoneController.text.trim();
-        final docNum = _idCardController.text.trim().isNotEmpty
-            ? _idCardController.text.trim()
-            : 'CCCD-${phone.replaceAll(RegExp(r'\s+'), '')}';
+        final docNum = _idCardController.text.trim();
         final email = _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null;
         final address = _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null;
 
@@ -613,9 +611,7 @@ class _BookingPageState extends State<BookingPage> {
             guestId: guestId,
             guestName: _nameController.text.trim(),
             guestPhone: _phoneController.text.trim(),
-            guestIdCard: _idCardController.text.trim().isNotEmpty
-                ? _idCardController.text.trim()
-                : null,
+            guestIdCard: _idCardController.text.trim(),
             roomId: _selectedRoom!.id,
             roomNumber: _selectedRoom!.roomNumber,
             roomTypeName: _selectedRoom!.roomTypeName,
@@ -1366,9 +1362,19 @@ class _BookingPageState extends State<BookingPage> {
                     ),
                     const SizedBox(height: 14),
                     CustomTextField(
-                      label: 'Số CCCD / Hộ chiếu (Tùy chọn)',
-                      hintText: 'Nhập số CCCD/Passport nếu có',
+                      label: 'Số CCCD / Hộ chiếu *',
+                      hintText: 'Nhập số CCCD (12 chữ số) hoặc hộ chiếu',
                       controller: _idCardController,
+                      keyboardType: TextInputType.text,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Vui lòng nhập số CCCD / Hộ chiếu (bắt buộc)';
+                        }
+                        if (v.trim().length < 8) {
+                          return 'Số CCCD / Hộ chiếu quá ngắn (tối thiểu 8 ký tự)';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
                     CustomTextField(

@@ -26,8 +26,15 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
         },
       );
       List items = [];
-      if (res.data is Map<String, dynamic> && res.data['items'] is List) {
-        items = res.data['items'] as List;
+      if (res.data is Map<String, dynamic>) {
+        final map = res.data as Map<String, dynamic>;
+        if (map['items'] is List) {
+          items = map['items'] as List;
+        } else if (map['Items'] is List) {
+          items = map['Items'] as List;
+        } else if (map['data'] is List) {
+          items = map['data'] as List;
+        }
       } else if (res.data is List) {
         items = res.data as List;
       }
@@ -77,3 +84,4 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
     }
   }
 }
+

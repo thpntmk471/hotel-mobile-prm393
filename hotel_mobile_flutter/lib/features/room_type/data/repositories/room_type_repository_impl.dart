@@ -59,3 +59,4 @@ class RoomTypeRepositoryImpl implements RoomTypeRepository {
     await remoteDataSource.deleteRoomType(id);
   }
 }
+

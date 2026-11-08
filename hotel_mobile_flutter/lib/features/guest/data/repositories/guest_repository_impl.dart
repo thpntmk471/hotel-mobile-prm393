@@ -67,3 +67,4 @@ class GuestRepositoryImpl implements GuestRepository {
     await remoteDataSource.archiveGuest(id, rowVersion);
   }
 }
+

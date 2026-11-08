@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../guest/presentation/pages/guest_list_page.dart';
 import '../providers/reservation_provider.dart';
 import '../widgets/reservation_card.dart';
 import 'booking_page.dart';
@@ -46,6 +47,25 @@ class _ReservationListPageState extends State<ReservationListPage> {
       appBar: AppBar(
         title: const Text('Danh sách đặt phòng'),
         actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white70),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GuestListPage()),
+                );
+              },
+              icon: const Icon(Icons.people_alt, size: 16),
+              label: const Text('Khách hàng', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Tải lại',

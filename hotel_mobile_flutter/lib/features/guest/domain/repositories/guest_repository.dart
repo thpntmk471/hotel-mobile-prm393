@@ -22,3 +22,4 @@ abstract class GuestRepository {
   });
   Future<void> archiveGuest(int id, String rowVersion);
 }
+

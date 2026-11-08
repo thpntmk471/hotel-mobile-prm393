@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/stat_metric_card.dart';
+import '../../../guest/presentation/pages/guest_list_page.dart';
 import '../../../hotel_service/presentation/pages/service_catalog_page.dart';
 import '../../../reservation/presentation/pages/booking_page.dart';
 import '../../../reservation/presentation/providers/reservation_provider.dart';
 import '../../../room/presentation/providers/room_provider.dart';
+import '../../../room_type/presentation/pages/room_type_list_page.dart';
 import '../../../stay/presentation/pages/stay_detail_page.dart';
 import '../../../stay/presentation/providers/stay_provider.dart';
 import '../../../task/presentation/pages/task_list_page.dart';
@@ -354,6 +356,65 @@ class HomePage extends StatelessWidget {
                                 },
                               ),
                             ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Phím tắt quản trị nghiệp vụ
+                    const Text(
+                      'QUẢN TRỊ NGHIỆP VỤ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.category,
+                          label: 'Loại phòng',
+                          color: const Color(0xFFD97706),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const RoomTypeListPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.people_alt,
+                          label: 'Khách hàng',
+                          color: const Color(0xFF0284C7),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const GuestListPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.meeting_room,
+                          label: 'Quản lý phòng',
+                          color: AppColors.primary,
+                          onTap: () => onNavigateTab?.call(1),
+                        ),
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.manage_accounts,
+                          label: 'Hồ sơ',
+                          color: const Color(0xFF7C3AED),
+                          onTap: () => onNavigateTab?.call(isHousekeeping ? 3 : 4),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 

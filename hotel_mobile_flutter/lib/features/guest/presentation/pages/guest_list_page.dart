@@ -68,8 +68,15 @@ class _GuestListPageState extends State<GuestListPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: docCtrl,
-                  decoration: const InputDecoration(labelText: 'Số CCCD / Hộ chiếu *'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập số CCCD/Hộ chiếu' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Số CCCD / Hộ chiếu *',
+                    hintText: 'Nhập 12 số CCCD hoặc số hộ chiếu',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Vui lòng nhập số CCCD / Hộ chiếu (bắt buộc)';
+                    if (v.trim().length < 8) return 'Số CCCD / Hộ chiếu tối thiểu 8 ký tự';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -139,6 +146,49 @@ class _GuestListPageState extends State<GuestListPage> {
               }
             },
             child: Text(isEdit ? 'Lưu' : 'Thêm mới', style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteGuestDialog(Guest guest) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xác nhận xóa khách hàng'),
+        content: Text('Bạn có chắc chắn muốn xóa hồ sơ khách "${guest.fullName}" khỏi hệ thống không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusOccupiedText),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final provider = context.read<GuestProvider>();
+              final messenger = ScaffoldMessenger.of(context);
+              final ok = await provider.archiveGuest(guest.id, guest.rowVersion);
+              if (mounted) {
+                if (ok) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Đã xóa hồ sơ khách "${guest.fullName}"!'),
+                      backgroundColor: AppColors.statusOccupiedText,
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(provider.errorMessage ?? 'Xóa hồ sơ thất bại!'),
+                      backgroundColor: AppColors.statusOccupiedText,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Xóa', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -285,10 +335,37 @@ class _GuestListPageState extends State<GuestListPage> {
                                     ),
                                   ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
-                                  tooltip: 'Sửa thông tin',
-                                  onPressed: () => _showAddEditDialog(guest),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                                  onSelected: (val) {
+                                    if (val == 'edit') {
+                                      _showAddEditDialog(guest);
+                                    } else if (val == 'delete') {
+                                      _showDeleteGuestDialog(guest);
+                                    }
+                                  },
+                                  itemBuilder: (ctx) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                          SizedBox(width: 8),
+                                          Text('Sửa thông tin'),
+                                        ],
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_outline, size: 18, color: AppColors.statusOccupiedText),
+                                          SizedBox(width: 8),
+                                          Text('Xóa hồ sơ', style: TextStyle(color: AppColors.statusOccupiedText)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
