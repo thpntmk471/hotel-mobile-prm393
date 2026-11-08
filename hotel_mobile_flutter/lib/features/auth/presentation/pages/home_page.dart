@@ -332,7 +332,7 @@ class HomePage extends StatelessWidget {
                               _buildQuickAction(
                                 context,
                                 icon: Icons.room_service_outlined,
-                                label: 'Gọi dịch vụ',
+                                label: 'Dịch vụ',
                                 color: const Color(0xFF7C3AED),
                                 onTap: () {
                                   Navigator.of(context).push(

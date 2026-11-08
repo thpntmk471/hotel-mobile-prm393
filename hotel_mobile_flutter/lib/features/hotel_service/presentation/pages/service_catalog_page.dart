@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
-import '../../../room/presentation/providers/room_provider.dart';
-import '../../../stay/presentation/providers/stay_provider.dart';
 import '../../domain/entities/hotel_service_item.dart';
 import '../providers/hotel_service_provider.dart';
 
@@ -25,10 +22,6 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HotelServiceProvider>().fetchServices();
-      final stayP = context.read<StayProvider>();
-      if (stayP.stays.isEmpty) stayP.fetchStays();
-      final roomP = context.read<RoomProvider>();
-      if (roomP.rooms.isEmpty) roomP.fetchRooms();
     });
   }
 
@@ -44,7 +37,12 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
 
   IconData _getServiceIcon(String name) {
     final lower = name.toLowerCase();
-    if (lower.contains('sáng') || lower.contains('buffet') || lower.contains('ăn') || lower.contains('uống') || lower.contains('cơm') || lower.contains('nước')) {
+    if (lower.contains('sáng') ||
+        lower.contains('buffet') ||
+        lower.contains('ăn') ||
+        lower.contains('uống') ||
+        lower.contains('cơm') ||
+        lower.contains('nước')) {
       return Icons.restaurant;
     }
     if (lower.contains('giặt') || lower.contains('ủi') || lower.contains('laundry')) {
@@ -53,7 +51,10 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     if (lower.contains('spa') || lower.contains('massage') || lower.contains('thư giãn')) {
       return Icons.spa;
     }
-    if (lower.contains('xe') || lower.contains('đón') || lower.contains('tiễn') || lower.contains('transport')) {
+    if (lower.contains('xe') ||
+        lower.contains('đón') ||
+        lower.contains('tiễn') ||
+        lower.contains('transport')) {
       return Icons.directions_car;
     }
     if (lower.contains('dọn') || lower.contains('vệ sinh')) {
@@ -289,165 +290,6 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     );
   }
 
-  // --- GỌI MÓN PHỤC VỤ PHÒNG (ROOM ORDER) ---
-  void _showOrderDialog(BuildContext context, HotelServiceItem service) {
-    int quantity = 1;
-    final stayProvider = context.read<StayProvider>();
-    final activeStays = stayProvider.stays.where((s) => s.isActive).toList();
-    final roomProvider = context.read<RoomProvider>();
-    final allRooms = roomProvider.rooms;
-
-    int selectedStayId = activeStays.isNotEmpty ? activeStays.first.id : 1;
-    String selectedRoomNumber = activeStays.isNotEmpty
-        ? activeStays.first.roomNumber
-        : (allRooms.isNotEmpty ? allRooms.first.roomNumber : 'DEV-101');
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            final total = service.price * quantity;
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Gọi dịch vụ: ${service.name}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text('Đơn giá: ${_formatCurrency(service.price)} / ${service.unit}'),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Chọn phòng phục vụ:', style: TextStyle(fontWeight: FontWeight.w600)),
-                      if (activeStays.isNotEmpty)
-                        DropdownButton<int>(
-                          value: selectedStayId,
-                          items: activeStays.map((s) {
-                            return DropdownMenuItem<int>(
-                              value: s.id,
-                              child: Text('Phòng ${s.roomNumber} (${s.guestName})'),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              final matched = activeStays.firstWhere((s) => s.id == val);
-                              setModalState(() {
-                                selectedStayId = val;
-                                selectedRoomNumber = matched.roomNumber;
-                              });
-                            }
-                          },
-                        )
-                      else if (allRooms.isNotEmpty)
-                        DropdownButton<String>(
-                          value: selectedRoomNumber,
-                          items: allRooms.map((r) {
-                            return DropdownMenuItem<String>(
-                              value: r.roomNumber,
-                              child: Text('Phòng ${r.roomNumber}'),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setModalState(() => selectedRoomNumber = val);
-                            }
-                          },
-                        )
-                      else
-                        Text(selectedRoomNumber),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Số lượng:', style: TextStyle(fontWeight: FontWeight.w600)),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: quantity > 1 ? () => setModalState(() => quantity--) : null,
-                          ),
-                          Text('$quantity', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline),
-                            onPressed: quantity < 50 ? () => setModalState(() => quantity++) : null,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Tổng tiền dịch vụ:', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(
-                        _formatCurrency(total),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  CustomButton(
-                    text: 'Gửi yêu cầu phục vụ tận phòng',
-                    onPressed: () async {
-                      final success = await context.read<HotelServiceProvider>().orderService(
-                            stayId: selectedStayId,
-                            roomNumber: selectedRoomNumber,
-                            service: service,
-                            quantity: quantity,
-                          );
-                      if (ctx.mounted) Navigator.pop(ctx);
-                      if (context.mounted) {
-                        if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Đã gửi yêu cầu ${service.name} tới phòng $selectedRoomNumber!'),
-                              backgroundColor: AppColors.statusActiveText,
-                            ),
-                          );
-                        } else {
-                          final err = context.read<HotelServiceProvider>().errorMessage ?? 'Gọi dịch vụ thất bại!';
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(err),
-                              backgroundColor: AppColors.statusOccupiedText,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HotelServiceProvider>();
@@ -462,7 +304,7 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Quản lý Dịch Vụ Khách Sạn'),
+        title: const Text('Quản lý Dịch Vụ'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -492,11 +334,20 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                   decoration: InputDecoration(
                     hintText: 'Tìm theo mã hoặc tên dịch vụ (Buffet, Spa...)...',
                     prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              context.read<HotelServiceProvider>().setSearchQuery('');
+                            },
+                          )
+                        : null,
                     filled: true,
                     fillColor: AppColors.background,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: AppColors.border),
                     ),
                   ),
@@ -548,10 +399,10 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
           Expanded(
             child: Builder(
               builder: (context) {
-                if (provider.isLoading) {
+                if (provider.isLoading && provider.services.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (provider.errorMessage != null) {
+                if (provider.errorMessage != null && provider.services.isEmpty) {
                   return Center(child: Text(provider.errorMessage!));
                 }
                 if (filteredServices.isEmpty) {
@@ -663,12 +514,12 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                                       ],
                                     ),
                                   ),
-                                  // Nút Sửa & Bật/Tắt
+                                  // Nút Thao tác CRUD: Sửa & Bật/Tắt trạng thái
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.textSecondary),
+                                        icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
                                         tooltip: 'Sửa dịch vụ',
                                         onPressed: () => _showAddEditServiceDialog(s),
                                       ),
@@ -689,31 +540,23 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  Row(
                                     children: [
-                                      const Text('Đơn giá niêm yết:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                      const Icon(Icons.straighten_outlined, size: 15, color: AppColors.textSecondary),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        '${_formatCurrency(s.price)} / ${s.unit}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
-                                          fontSize: 14,
-                                        ),
+                                        'Đơn vị: ${s.unit}',
+                                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                                       ),
                                     ],
                                   ),
-                                  ElevatedButton.icon(
-                                    onPressed: s.isAvailable ? () => _showOrderDialog(context, s) : null,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      elevation: 0,
+                                  Text(
+                                    '${_formatCurrency(s.price)} / ${s.unit}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                      fontSize: 15,
                                     ),
-                                    icon: const Icon(Icons.room_service, size: 15),
-                                    label: const Text('Phục vụ phòng', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
