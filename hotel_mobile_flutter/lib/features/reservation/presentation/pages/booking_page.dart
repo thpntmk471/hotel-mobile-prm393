@@ -27,9 +27,14 @@ class _BookingPageState extends State<BookingPage> {
   final _idCardController = TextEditingController();
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
+  final _documentSearchController = TextEditingController();
+  final _countryCodeController = TextEditingController(text: 'VN');
 
   int? _selectedGuestId;
   Guest? _selectedGuest;
+  bool _isSearchingGuest = false;
+  String? _notFoundDocument;
+  int _documentType = 1; // 1: CCCD, 2: Hộ chiếu
 
   // 1. Tiêu chí lọc ngày
   late DateTime _checkInDate;
@@ -87,6 +92,8 @@ class _BookingPageState extends State<BookingPage> {
     _idCardController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _documentSearchController.dispose();
+    _countryCodeController.dispose();
     super.dispose();
   }
 
@@ -569,6 +576,141 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
+  Future<void> _searchGuestByDocument() async {
+    final doc = _documentSearchController.text.trim();
+    if (doc.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập số CCCD hoặc hộ chiếu để tra cứu'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSearchingGuest = true;
+      _notFoundDocument = null;
+    });
+
+    final guestProvider = context.read<GuestProvider>();
+    final guest = await guestProvider.findGuestByDocument(doc);
+
+    if (!mounted) return;
+
+    if (guest != null) {
+      setState(() {
+        _isSearchingGuest = false;
+        _selectedGuest = guest;
+        _selectedGuestId = guest.id;
+        _notFoundDocument = null;
+        _nameController.text = guest.fullName;
+        _phoneController.text = guest.phoneNumber;
+        _idCardController.text = guest.documentNumber;
+        _emailController.text = guest.email;
+        _addressController.text = guest.address;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã tìm thấy & gán thông tin khách: ${guest.fullName}'),
+          backgroundColor: AppColors.statusActiveText,
+        ),
+      );
+    } else {
+      setState(() {
+        _isSearchingGuest = false;
+        _selectedGuest = null;
+        _selectedGuestId = null;
+        _notFoundDocument = doc;
+        _idCardController.text = doc;
+        _nameController.clear();
+        _phoneController.clear();
+        _emailController.clear();
+        _addressController.clear();
+      });
+    }
+  }
+
+  void _resetGuestSelection() {
+    setState(() {
+      _selectedGuest = null;
+      _selectedGuestId = null;
+      _notFoundDocument = null;
+      _documentSearchController.clear();
+      _nameController.clear();
+      _phoneController.clear();
+      _idCardController.clear();
+      _emailController.clear();
+      _addressController.clear();
+    });
+  }
+
+  Future<void> _quickCreateGuest() async {
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập họ và tên khách hàng'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    if (_phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập số điện thoại'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    final docNum = _idCardController.text.trim().isNotEmpty
+        ? _idCardController.text.trim()
+        : _documentSearchController.text.trim();
+    if (docNum.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập số CCCD hoặc hộ chiếu'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    final guestProvider = context.read<GuestProvider>();
+    final newGuest = await guestProvider.createGuest(
+      fullName: _nameController.text.trim(),
+      phoneNumber: _phoneController.text.trim(),
+      email: _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null,
+      documentNumber: docNum,
+      address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+      notes: 'Tạo nhanh từ đơn đặt phòng',
+    );
+
+    if (!mounted) return;
+
+    if (newGuest != null) {
+      setState(() {
+        _selectedGuest = newGuest;
+        _selectedGuestId = newGuest.id;
+        _notFoundDocument = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã lưu & chọn khách hàng: ${newGuest.fullName}'),
+          backgroundColor: AppColors.statusActiveText,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(guestProvider.errorMessage ?? 'Không thể tạo hồ sơ khách hàng!'),
+          backgroundColor: AppColors.statusOccupiedText,
+        ),
+      );
+    }
+  }
+
   void _onSubmit() async {
     if (_selectedRoom == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -580,64 +722,92 @@ class _BookingPageState extends State<BookingPage> {
       return;
     }
 
-    if (_formKey.currentState?.validate() ?? false) {
-      final resProvider = context.read<ReservationProvider>();
-      final guestProvider = context.read<GuestProvider>();
-      int? guestId = _selectedGuestId;
+    final resProvider = context.read<ReservationProvider>();
+    final guestProvider = context.read<GuestProvider>();
+    int? guestId = _selectedGuestId;
 
-      // Nếu chưa chọn khách có sẵn (tức nhập khách mới), tự động lưu khách mới vào hệ thống GuestAPI
-      if (guestId == null) {
-        final name = _nameController.text.trim();
-        final phone = _phoneController.text.trim();
-        final docNum = _idCardController.text.trim();
-        final email = _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null;
-        final address = _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null;
+    // Nếu chưa chọn khách và đang điền form tạo mới
+    if (guestId == null) {
+      if (_nameController.text.trim().isNotEmpty && _phoneController.text.trim().isNotEmpty) {
+        final docNum = _idCardController.text.trim().isNotEmpty
+            ? _idCardController.text.trim()
+            : _documentSearchController.text.trim();
+
+        if (docNum.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Vui lòng nhập số CCCD / Hộ chiếu của khách'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          return;
+        }
 
         final newGuest = await guestProvider.createGuest(
-          fullName: name,
-          phoneNumber: phone,
-          email: email,
+          fullName: _nameController.text.trim(),
+          phoneNumber: _phoneController.text.trim(),
+          email: _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null,
           documentNumber: docNum,
-          address: address,
+          address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
           notes: 'Được tạo tự động khi đặt phòng',
         );
 
         if (newGuest != null) {
           guestId = newGuest.id;
+          _selectedGuestId = newGuest.id;
+          _selectedGuest = newGuest;
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(guestProvider.errorMessage ?? 'Không thể tạo hồ sơ khách hàng!'),
+                backgroundColor: AppColors.statusOccupiedText,
+              ),
+            );
+          }
+          return;
         }
-      }
-
-      final success = await resProvider.createReservation(
-            guestId: guestId,
-            guestName: _nameController.text.trim(),
-            guestPhone: _phoneController.text.trim(),
-            guestIdCard: _idCardController.text.trim(),
-            roomId: _selectedRoom!.id,
-            roomNumber: _selectedRoom!.roomNumber,
-            roomTypeName: _selectedRoom!.roomTypeName,
-            pricePerNight: _selectedRoom!.pricePerNight,
-            checkInDate: _checkInDate,
-            checkOutDate: _checkOutDate,
-            numberOfGuests: _numberOfGuests,
-          );
-
-      if (success && mounted) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đặt phòng ${_selectedRoom!.roomNumber} thành công!'),
-            backgroundColor: AppColors.statusActiveText,
+          const SnackBar(
+            content: Text('Vui lòng tra cứu số CCCD hoặc điền thông tin khách hàng trước'),
+            backgroundColor: AppColors.error,
           ),
         );
-        Navigator.of(context).pop();
-      } else if (mounted) {
-        final err = context.read<ReservationProvider>().errorMessage ?? 'Đặt phòng thất bại. Vui lòng kiểm tra lại thông tin!';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err),
-            backgroundColor: AppColors.statusOccupiedText,
-          ),
-        );
+        return;
       }
+    }
+
+    final success = await resProvider.createReservation(
+      guestId: guestId,
+      guestName: _selectedGuest?.fullName ?? _nameController.text.trim(),
+      guestPhone: _selectedGuest?.phoneNumber ?? _phoneController.text.trim(),
+      guestIdCard: _selectedGuest?.documentNumber ?? _idCardController.text.trim(),
+      roomId: _selectedRoom!.id,
+      roomNumber: _selectedRoom!.roomNumber,
+      roomTypeName: _selectedRoom!.roomTypeName,
+      pricePerNight: _selectedRoom!.pricePerNight,
+      checkInDate: _checkInDate,
+      checkOutDate: _checkOutDate,
+      numberOfGuests: _numberOfGuests,
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đặt phòng ${_selectedRoom!.roomNumber} thành công!'),
+          backgroundColor: AppColors.statusActiveText,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else if (mounted) {
+      final err = context.read<ReservationProvider>().errorMessage ?? 'Đặt phòng thất bại. Vui lòng kiểm tra lại thông tin!';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err),
+          backgroundColor: AppColors.statusOccupiedText,
+        ),
+      );
     }
   }
 
@@ -1253,7 +1423,7 @@ class _BookingPageState extends State<BookingPage> {
               const SizedBox(height: 16),
 
               // ==========================================
-              // KHỐI 3: THÔNG TIN KHÁCH HÀNG
+              // KHỐI 3: TÌM VÀ CHỌN KHÁCH HÀNG (THEO CCCD)
               // ==========================================
               Container(
                 padding: const EdgeInsets.all(16),
@@ -1272,117 +1442,307 @@ class _BookingPageState extends State<BookingPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header chuẩn phong cách Hệ thống Quản lý Khách sạn
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Thông tin khách hàng',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE6F4EA),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            '1',
+                            style: TextStyle(
+                              color: Color(0xFF0F766E),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
-                        TextButton.icon(
-                          onPressed: () => _showSelectGuestModal(context),
-                          icon: const Icon(Icons.person_search, size: 18),
-                          label: const Text('Chọn khách có sẵn', style: TextStyle(fontSize: 12.5)),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tìm và chọn khách hàng',
+                                style: TextStyle(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Tra cứu bằng số CCCD hoặc hộ chiếu. Nếu chưa có hồ sơ, có thể tạo khách mới.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    if (_selectedGuestId != null) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check_circle, color: AppColors.primary, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Đã liên kết hồ sơ: ${_selectedGuest?.fullName ?? _nameController.text} (ID: #$_selectedGuestId)',
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                    const SizedBox(height: 16),
+
+                    // Ô tra cứu số CCCD hoặc hộ chiếu
+                    const Text(
+                      'Số CCCD hoặc hộ chiếu',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _documentSearchController,
+                            keyboardType: TextInputType.text,
+                            decoration: InputDecoration(
+                              hintText: 'Nhập số CCCD (12 số) hoặc hộ chiếu...',
+                              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(color: Color(0xFF0F766E), width: 1.5),
                               ),
                             ),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedGuestId = null;
-                                  _selectedGuest = null;
-                                  _nameController.clear();
-                                  _phoneController.clear();
-                                  _idCardController.clear();
-                                  _emailController.clear();
-                                  _addressController.clear();
-                                });
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(4),
-                                child: Icon(Icons.close, size: 16, color: AppColors.primary),
+                            onSubmitted: (_) => _searchGuestByDocument(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: _isSearchingGuest ? null : _searchGuestByDocument,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F766E),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                          icon: _isSearchingGuest
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Icon(Icons.search, size: 18),
+                          label: const Text('Tìm khách', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ),
+                      ],
+                    ),
+
+                    // ================================================
+                    // TRƯỜNG HỢP 1: TÌM THẤY KHÁCH HÀNG (Ảnh 1)
+                    // ================================================
+                    if (_selectedGuest != null) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF86EFAC), width: 1.2),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'ĐÃ CHỌN KHÁCH HÀNG',
+                                    style: TextStyle(
+                                      color: Color(0xFF15803D),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _selectedGuest!.fullName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Giấy tờ: ${_selectedGuest!.documentNumber}',
+                                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF475569)),
+                                  ),
+                                  Text(
+                                    'Điện thoại: ${_selectedGuest!.phoneNumber}',
+                                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF475569)),
+                                  ),
+                                ],
                               ),
+                            ),
+                            OutlinedButton(
+                              onPressed: _resetGuestSelection,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF0F766E),
+                                side: const BorderSide(color: Color(0xFF0F766E)),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('Chọn khách khác', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    CustomTextField(
-                      label: 'Họ và tên khách hàng *',
-                      hintText: 'Nhập họ tên (ví dụ: Nguyễn Văn A)',
-                      controller: _nameController,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập họ tên khách';
-                        if (v.trim().length < 2) return 'Họ tên quá ngắn';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    CustomTextField(
-                      label: 'Số điện thoại *',
-                      hintText: 'Nhập số điện thoại (10 chữ số)',
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập số điện thoại';
-                        final reg = RegExp(r'^(0[3|5|7|8|9])[0-9]{8}$');
-                        if (!reg.hasMatch(v.trim())) {
-                          return 'Số điện thoại không hợp lệ (cần 10 chữ số)';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    CustomTextField(
-                      label: 'Số CCCD / Hộ chiếu *',
-                      hintText: 'Nhập số CCCD (12 chữ số) hoặc hộ chiếu',
-                      controller: _idCardController,
-                      keyboardType: TextInputType.text,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Vui lòng nhập số CCCD / Hộ chiếu (bắt buộc)';
-                        }
-                        if (v.trim().length < 8) {
-                          return 'Số CCCD / Hộ chiếu quá ngắn (tối thiểu 8 ký tự)';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    CustomTextField(
-                      label: 'Email (Tùy chọn)',
-                      hintText: 'email@example.com',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
+
+                    // ================================================
+                    // TRƯỜNG HỢP 2: KHÔNG TÌM THẤY KHÁCH HÀNG (Ảnh 2)
+                    // ================================================
+                    if (_notFoundDocument != null && _selectedGuest == null) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFCD34D)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline, color: Color(0xFFB45309), size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Không tìm thấy khách có số giấy tờ "$_notFoundDocument". Bạn có thể tạo hồ sơ khách hàng mới bằng biểu mẫu bên dưới.',
+                                style: const TextStyle(color: Color(0xFF92400E), fontSize: 12.5, height: 1.3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Tạo nhanh hồ sơ khách hàng',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        label: 'Họ và tên *',
+                        hintText: 'Nhập họ và tên',
+                        controller: _nameController,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Vui lòng nhập họ và tên khách';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        label: 'Số điện thoại *',
+                        hintText: 'Số điện thoại',
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Vui lòng nhập số điện thoại';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              initialValue: _documentType,
+                              decoration: InputDecoration(
+                                labelText: 'Loại giấy tờ',
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 1, child: Text('CCCD', style: TextStyle(fontSize: 13))),
+                                DropdownMenuItem(value: 2, child: Text('Hộ chiếu', style: TextStyle(fontSize: 13))),
+                              ],
+                              onChanged: (v) => setState(() => _documentType = v ?? 1),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: CustomTextField(
+                              label: 'Mã quốc gia',
+                              hintText: 'VN',
+                              controller: _countryCodeController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        label: 'Số giấy tờ *',
+                        hintText: 'Số CCCD hoặc hộ chiếu',
+                        controller: _idCardController,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Số giấy tờ là bắt buộc';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        label: 'Email (tùy chọn)',
+                        hintText: 'Địa chỉ email',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        label: 'Địa chỉ (tùy chọn)',
+                        hintText: 'Nhập địa chỉ',
+                        controller: _addressController,
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _quickCreateGuest,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF0F766E),
+                            side: const BorderSide(color: Color(0xFF0F766E)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.person_add_alt_1, size: 18),
+                          label: const Text('Lưu & Chọn khách này', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+
+                    // Nút mở modal chọn khách đã có nếu muốn duyệt danh bạ
+                    if (_selectedGuest == null && _notFoundDocument == null) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => _showSelectGuestModal(context),
+                          icon: const Icon(Icons.people_outline, size: 16),
+                          label: const Text('Hoặc chọn từ danh bạ khách hàng', style: TextStyle(fontSize: 12.5)),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

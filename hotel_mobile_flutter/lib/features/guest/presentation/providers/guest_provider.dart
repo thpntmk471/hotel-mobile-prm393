@@ -30,6 +30,35 @@ class GuestProvider extends ChangeNotifier {
     }
   }
 
+  Future<Guest?> findGuestByDocument(String documentNumber) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final guest = await guestRepository.findGuestByDocument(documentNumber.trim());
+      if (guest != null) {
+        _isLoading = false;
+        notifyListeners();
+        return guest;
+      }
+      for (final g in _guests) {
+        if (g.documentNumber.trim().toLowerCase() == documentNumber.trim().toLowerCase()) {
+          _isLoading = false;
+          notifyListeners();
+          return g;
+        }
+      }
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    } catch (_) {
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<Guest?> createGuest({
     required String fullName,
     required String phoneNumber,

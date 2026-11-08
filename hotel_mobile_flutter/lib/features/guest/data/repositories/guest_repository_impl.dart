@@ -14,6 +14,12 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
+  Future<Guest?> findGuestByDocument(String documentNumber) async {
+    final model = await remoteDataSource.findGuestByDocument(documentNumber);
+    return model?.toEntity();
+  }
+
+  @override
   Future<Guest> createGuest({
     required String fullName,
     required String phoneNumber,

@@ -2,6 +2,7 @@ import '../entities/guest.dart';
 
 abstract class GuestRepository {
   Future<List<Guest>> getGuests({String? keyword});
+  Future<Guest?> findGuestByDocument(String documentNumber);
   Future<Guest> createGuest({
     required String fullName,
     required String phoneNumber,
