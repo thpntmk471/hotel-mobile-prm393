@@ -20,6 +20,7 @@ class _ReservationListPageState extends State<ReservationListPage> {
     'Đã xác nhận',
     'Đã nhận phòng',
     'Đã trả phòng',
+    'Đã hủy',
   ];
 
   @override
@@ -188,24 +189,94 @@ class _ReservationListPageState extends State<ReservationListPage> {
                       final res = reservationProvider.reservations[index];
                       return ReservationCard(
                         reservation: res,
-                        onCheckIn: () {
-                          context
-                              .read<ReservationProvider>()
-                              .updateStatus(res.id, 'Đã nhận phòng');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Đã check-in nhận phòng cho đơn ${res.id}'),
-                              backgroundColor: AppColors.statusActiveText,
-                            ),
-                          );
+                        onCheckIn: () async {
+                          try {
+                            await context
+                                .read<ReservationProvider>()
+                                .updateStatus(res.id, 'Đã nhận phòng', rowVersion: res.rowVersion);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Đã nhận phòng cho đơn ${res.id}'),
+                                  backgroundColor: AppColors.statusActiveText,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Lỗi nhận phòng: $e'),
+                                  backgroundColor: AppColors.statusOccupiedText,
+                                ),
+                              );
+                            }
+                          }
                         },
-                        onCheckOut: () {
-                          context
-                              .read<ReservationProvider>()
-                              .updateStatus(res.id, 'Đã trả phòng');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Đã hoàn tất trả phòng cho đơn ${res.id}'),
+                        onCheckOut: () async {
+                          try {
+                            await context
+                                .read<ReservationProvider>()
+                                .updateStatus(res.id, 'Đã trả phòng', rowVersion: res.rowVersion);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Đã hoàn tất trả phòng cho đơn ${res.id}'),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Lỗi trả phòng: $e'),
+                                  backgroundColor: AppColors.statusOccupiedText,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        onCancel: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Xác nhận hủy đặt phòng'),
+                              content: Text('Bạn có chắc muốn hủy đơn đặt phòng ${res.id} của khách ${res.guestName}?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Quay lại'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusOccupiedText),
+                                  onPressed: () async {
+                                    Navigator.pop(ctx);
+                                    try {
+                                      await context
+                                          .read<ReservationProvider>()
+                                          .updateStatus(res.id, 'Đã hủy', rowVersion: res.rowVersion);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Đã hủy thành công đơn đặt phòng ${res.id}!'),
+                                            backgroundColor: AppColors.statusOccupiedText,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Lỗi hủy phòng: $e'),
+                                            backgroundColor: AppColors.statusOccupiedText,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: const Text('Hủy đơn', style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
                             ),
                           );
                         },

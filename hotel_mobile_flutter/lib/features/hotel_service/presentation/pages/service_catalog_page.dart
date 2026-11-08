@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../room/presentation/providers/room_provider.dart';
+import '../../../stay/presentation/providers/stay_provider.dart';
 import '../../domain/entities/hotel_service_item.dart';
 import '../providers/hotel_service_provider.dart';
 
@@ -22,6 +24,10 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HotelServiceProvider>().fetchServices();
+      final stayP = context.read<StayProvider>();
+      if (stayP.stays.isEmpty) stayP.fetchStays();
+      final roomP = context.read<RoomProvider>();
+      if (roomP.rooms.isEmpty) roomP.fetchRooms();
     });
   }
 
@@ -50,7 +56,15 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
 
   void _showOrderDialog(BuildContext context, HotelServiceItem service) {
     int quantity = 1;
-    String roomNumber = 'DEV-101';
+    final stayProvider = context.read<StayProvider>();
+    final activeStays = stayProvider.stays.where((s) => s.isActive).toList();
+    final roomProvider = context.read<RoomProvider>();
+    final allRooms = roomProvider.rooms;
+
+    int selectedStayId = activeStays.isNotEmpty ? activeStays.first.id : 1;
+    String selectedRoomNumber = activeStays.isNotEmpty
+        ? activeStays.first.roomNumber
+        : (allRooms.isNotEmpty ? allRooms.first.roomNumber : 'DEV-101');
 
     showModalBottomSheet(
       context: context,
@@ -89,13 +103,42 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Chọn phòng phục vụ:', style: TextStyle(fontWeight: FontWeight.w600)),
-                      DropdownButton<String>(
-                        value: roomNumber,
-                        items: ['DEV-101', 'DEV-202', 'DEV-301']
-                            .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                            .toList(),
-                        onChanged: (val) => setModalState(() => roomNumber = val!),
-                      ),
+                      if (activeStays.isNotEmpty)
+                        DropdownButton<int>(
+                          value: selectedStayId,
+                          items: activeStays.map((s) {
+                            return DropdownMenuItem<int>(
+                              value: s.id,
+                              child: Text('Phòng ${s.roomNumber} (${s.guestName})'),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              final matched = activeStays.firstWhere((s) => s.id == val);
+                              setModalState(() {
+                                selectedStayId = val;
+                                selectedRoomNumber = matched.roomNumber;
+                              });
+                            }
+                          },
+                        )
+                      else if (allRooms.isNotEmpty)
+                        DropdownButton<String>(
+                          value: selectedRoomNumber,
+                          items: allRooms.map((r) {
+                            return DropdownMenuItem<String>(
+                              value: r.roomNumber,
+                              child: Text('Phòng ${r.roomNumber}'),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setModalState(() => selectedRoomNumber = val);
+                            }
+                          },
+                        )
+                      else
+                        Text(selectedRoomNumber),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -132,20 +175,32 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                   const SizedBox(height: 20),
                   CustomButton(
                     text: 'Gửi yêu cầu phục vụ tận phòng',
-                    onPressed: () {
-                      context.read<HotelServiceProvider>().orderService(
-                            stayId: 1,
-                            roomNumber: roomNumber,
+                    onPressed: () async {
+                      final success = await context.read<HotelServiceProvider>().orderService(
+                            stayId: selectedStayId,
+                            roomNumber: selectedRoomNumber,
                             service: service,
                             quantity: quantity,
                           );
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Đã gửi yêu cầu ${service.name} tới phòng $roomNumber!'),
-                          backgroundColor: AppColors.statusActiveText,
-                        ),
-                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (context.mounted) {
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Đã gửi yêu cầu ${service.name} tới phòng $selectedRoomNumber!'),
+                              backgroundColor: AppColors.statusActiveText,
+                            ),
+                          );
+                        } else {
+                          final err = context.read<HotelServiceProvider>().errorMessage ?? 'Gọi dịch vụ thất bại!';
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(err),
+                              backgroundColor: AppColors.statusOccupiedText,
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                 ],

@@ -477,6 +477,14 @@ class _BookingPageState extends State<BookingPage> {
           ),
         );
         Navigator.of(context).pop();
+      } else if (mounted) {
+        final err = context.read<ReservationProvider>().errorMessage ?? 'Đặt phòng thất bại. Vui lòng kiểm tra lại thông tin!';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err),
+            backgroundColor: AppColors.statusOccupiedText,
+          ),
+        );
       }
     }
   }

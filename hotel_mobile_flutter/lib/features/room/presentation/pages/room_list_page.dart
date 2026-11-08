@@ -17,7 +17,13 @@ class _RoomListPageState extends State<RoomListPage> {
   final _searchController = TextEditingController();
 
   final List<String> _roomTypes = ['Tất cả', 'Phòng Standard', 'Phòng Deluxe', 'Phòng VIP Suite'];
-  final List<String> _housekeepingStatuses = ['Tất cả', 'Sạch', 'Cần dọn'];
+  final List<String> _housekeepingStatuses = [
+    'Tất cả',
+    'Sạch',
+    'Cần dọn',
+    'Đang dọn',
+    'Đã kiểm tra',
+  ];
 
   @override
   void initState() {
@@ -206,16 +212,31 @@ class _RoomListPageState extends State<RoomListPage> {
                       final room = roomProvider.rooms[index];
                       return RoomCard(
                         room: room,
-                        onToggleHousekeeping: () {
-                          context.read<RoomProvider>().toggleHousekeepingStatus(room);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Đã cập nhật phòng ${room.roomNumber} sang: ${room.housekeepingStatus == 'Sạch' ? 'Cần dọn' : 'Sạch'}',
-                              ),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
+                        onToggleHousekeeping: () async {
+                          try {
+                            final nextStatus = room.housekeepingStatus == 'Sạch' ? 'Cần dọn' : 'Sạch';
+                            await context.read<RoomProvider>().toggleHousekeepingStatus(room);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Đã cập nhật phòng ${room.roomNumber} sang: $nextStatus',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                  backgroundColor: AppColors.statusActiveText,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Lỗi cập nhật phòng: $e'),
+                                  backgroundColor: AppColors.statusOccupiedText,
+                                ),
+                              );
+                            }
+                          }
                         },
                         onBookNow: () {
                           Navigator.of(context).push(

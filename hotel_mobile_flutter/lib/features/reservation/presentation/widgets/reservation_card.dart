@@ -7,12 +7,14 @@ class ReservationCard extends StatelessWidget {
   final Reservation reservation;
   final VoidCallback? onCheckIn;
   final VoidCallback? onCheckOut;
+  final VoidCallback? onCancel;
 
   const ReservationCard({
     super.key,
     required this.reservation,
     this.onCheckIn,
     this.onCheckOut,
+    this.onCancel,
   });
 
   String _formatDate(DateTime dt) {
@@ -206,17 +208,35 @@ class ReservationCard extends StatelessWidget {
                       ],
                     ),
                     if (isConfirmed)
-                      ElevatedButton.icon(
-                        onPressed: onCheckIn,
-                        icon: const Icon(Icons.login, size: 16),
-                        label: const Text('Nhận phòng ngay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          elevation: 0,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onCancel != null) ...[
+                            OutlinedButton(
+                              onPressed: onCancel,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.statusOccupiedText,
+                                side: BorderSide(color: AppColors.statusOccupiedText.withValues(alpha: 0.5)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              ),
+                              child: const Text('Hủy', style: TextStyle(fontSize: 12)),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          ElevatedButton.icon(
+                            onPressed: onCheckIn,
+                            icon: const Icon(Icons.login, size: 16),
+                            label: const Text('Nhận phòng', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              elevation: 0,
+                            ),
+                          ),
+                        ],
                       )
                     else if (isCheckedIn)
                       OutlinedButton.icon(

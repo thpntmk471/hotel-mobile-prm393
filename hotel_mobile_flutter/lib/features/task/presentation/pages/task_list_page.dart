@@ -204,11 +204,27 @@ class _TaskListPageState extends State<TaskListPage> {
               ),
               if (task.isPending) ...[
                 ElevatedButton(
-                  onPressed: () {
-                    context.read<TaskProvider>().acceptTask(task.id, currentStaff);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Đã nhận dọn phòng ${task.roomNumber}')),
-                    );
+                  onPressed: () async {
+                    try {
+                      await context.read<TaskProvider>().acceptTask(task.id, currentStaff);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Đã nhận dọn phòng ${task.roomNumber}'),
+                            backgroundColor: AppColors.statusActiveText,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Lỗi nhận việc: $e'),
+                            backgroundColor: AppColors.statusOccupiedText,
+                          ),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -219,14 +235,27 @@ class _TaskListPageState extends State<TaskListPage> {
                 ),
               ] else if (task.isInProgress) ...[
                 ElevatedButton(
-                  onPressed: () {
-                    context.read<TaskProvider>().completeTask(task.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đã hoàn tất dọn phòng ${task.roomNumber}!'),
-                        backgroundColor: AppColors.statusActiveText,
-                      ),
-                    );
+                  onPressed: () async {
+                    try {
+                      await context.read<TaskProvider>().completeTask(task.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Đã hoàn tất dọn phòng ${task.roomNumber}!'),
+                            backgroundColor: AppColors.statusActiveText,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Lỗi hoàn tất việc: $e'),
+                            backgroundColor: AppColors.statusOccupiedText,
+                          ),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.statusActiveText,
