@@ -2,43 +2,51 @@ import '../../domain/entities/hotel_service_item.dart';
 
 class HotelServiceItemModel {
   final int id;
+  final String serviceCode;
   final String name;
   final String category;
   final double price;
   final String unit;
   final String description;
   final bool isAvailable;
+  final String rowVersion;
 
   HotelServiceItemModel({
     required this.id,
+    this.serviceCode = '',
     required this.name,
     required this.category,
     required this.price,
     required this.unit,
     required this.description,
     this.isAvailable = true,
+    this.rowVersion = '',
   });
 
   factory HotelServiceItemModel.fromJson(Map<String, dynamic> json) {
     return HotelServiceItemModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name'] ?? json['serviceName'] ?? 'Dịch vụ',
-      category: json['category'] ?? json['type'] ?? 'Dịch vụ',
+      serviceCode: (json['serviceCode'] ?? json['ServiceCode'] ?? '').toString(),
+      name: (json['name'] ?? json['serviceName'] ?? 'Dịch vụ').toString(),
+      category: (json['category'] ?? json['type'] ?? 'Dịch vụ').toString(),
       price: (json['currentPrice'] ?? json['price'] ?? json['unitPrice'] ?? 0).toDouble(),
-      unit: json['unit'] ?? 'Lượt',
-      description: json['description'] ?? '',
+      unit: (json['unit'] ?? 'Lượt').toString(),
+      description: (json['description'] ?? '').toString(),
       isAvailable: json['isActive'] ?? json['isAvailable'] ?? true,
+      rowVersion: (json['rowVersion'] ?? json['RowVersion'] ?? '').toString(),
     );
   }
 
   HotelServiceItem toEntity() => HotelServiceItem(
         id: id,
+        serviceCode: serviceCode.isNotEmpty ? serviceCode : 'SRV-$id',
         name: name,
         category: category,
         price: price,
         unit: unit,
         description: description,
         isAvailable: isAvailable,
+        rowVersion: rowVersion,
       );
 }
 

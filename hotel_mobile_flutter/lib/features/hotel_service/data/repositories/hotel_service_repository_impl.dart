@@ -53,5 +53,60 @@ class HotelServiceRepositoryImpl implements HotelServiceRepository {
     final model = await remoteDataSource.orderService(payload);
     return model.toEntity();
   }
+
+  @override
+  Future<HotelServiceItem> createService({
+    required String serviceCode,
+    required String name,
+    required String unit,
+    required double price,
+    String? description,
+    bool isActive = true,
+  }) async {
+    final payload = {
+      'serviceCode': serviceCode,
+      'name': name,
+      'description': description,
+      'unit': unit,
+      'currentPrice': price,
+      'isActive': isActive,
+    };
+    final model = await remoteDataSource.createService(payload);
+    return model.toEntity();
+  }
+
+  @override
+  Future<HotelServiceItem> updateService({
+    required int id,
+    required String serviceCode,
+    required String name,
+    required String unit,
+    required double price,
+    required String rowVersion,
+    String? description,
+    bool isActive = true,
+  }) async {
+    final payload = {
+      'serviceCode': serviceCode,
+      'name': name,
+      'description': description,
+      'unit': unit,
+      'currentPrice': price,
+      'isActive': isActive,
+      'rowVersion': rowVersion,
+    };
+    final model = await remoteDataSource.updateService(id, payload);
+    return model.toEntity();
+  }
+
+  @override
+  Future<HotelServiceItem> updateStatus({
+    required int id,
+    required bool isActive,
+    required String rowVersion,
+  }) async {
+    final model = await remoteDataSource.updateStatus(id, isActive, rowVersion);
+    return model.toEntity();
+  }
 }
 

@@ -76,5 +76,92 @@ class HotelServiceProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> createService({
+    required String serviceCode,
+    required String name,
+    required String unit,
+    required double price,
+    String? description,
+    bool isActive = true,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await serviceRepository.createService(
+        serviceCode: serviceCode,
+        name: name,
+        unit: unit,
+        price: price,
+        description: description,
+        isActive: isActive,
+      );
+      await fetchServices();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateService({
+    required int id,
+    required String serviceCode,
+    required String name,
+    required String unit,
+    required double price,
+    required String rowVersion,
+    String? description,
+    bool isActive = true,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await serviceRepository.updateService(
+        id: id,
+        serviceCode: serviceCode,
+        name: name,
+        unit: unit,
+        price: price,
+        rowVersion: rowVersion,
+        description: description,
+        isActive: isActive,
+      );
+      await fetchServices();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> toggleServiceStatus(HotelServiceItem item) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await serviceRepository.updateStatus(
+        id: item.id,
+        isActive: !item.isAvailable,
+        rowVersion: item.rowVersion,
+      );
+      await fetchServices();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }
 

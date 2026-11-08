@@ -6,6 +6,9 @@ abstract class HotelServiceRemoteDataSource {
   Future<List<HotelServiceItemModel>> fetchServices();
   Future<List<ServiceUsageOrderModel>> fetchOrders();
   Future<ServiceUsageOrderModel> orderService(Map<String, dynamic> payload);
+  Future<HotelServiceItemModel> createService(Map<String, dynamic> payload);
+  Future<HotelServiceItemModel> updateService(int id, Map<String, dynamic> payload);
+  Future<HotelServiceItemModel> updateStatus(int id, bool isActive, String rowVersion);
 }
 
 class HotelServiceRemoteDataSourceImpl implements HotelServiceRemoteDataSource {
@@ -26,6 +29,57 @@ class HotelServiceRemoteDataSourceImpl implements HotelServiceRemoteDataSource {
       items = raw['data'] as List;
     }
     return items.map((e) => HotelServiceItemModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<HotelServiceItemModel> createService(Map<String, dynamic> payload) async {
+    try {
+      final res = await dio.post(ApiConstants.hotelService, data: payload);
+      return HotelServiceItemModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      String msg = 'Không thể tạo dịch vụ.';
+      if (e.response?.data is Map) {
+        final d = e.response!.data as Map;
+        msg = d['message']?.toString() ?? d['title']?.toString() ?? msg;
+      }
+      throw Exception(msg);
+    }
+  }
+
+  @override
+  Future<HotelServiceItemModel> updateService(int id, Map<String, dynamic> payload) async {
+    try {
+      final res = await dio.put('${ApiConstants.hotelService}/$id', data: payload);
+      return HotelServiceItemModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      String msg = 'Không thể cập nhật dịch vụ.';
+      if (e.response?.data is Map) {
+        final d = e.response!.data as Map;
+        msg = d['message']?.toString() ?? d['title']?.toString() ?? msg;
+      }
+      throw Exception(msg);
+    }
+  }
+
+  @override
+  Future<HotelServiceItemModel> updateStatus(int id, bool isActive, String rowVersion) async {
+    try {
+      final res = await dio.patch(
+        '${ApiConstants.hotelService}/$id/status',
+        data: {
+          'isActive': isActive,
+          'rowVersion': rowVersion,
+        },
+      );
+      return HotelServiceItemModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      String msg = 'Không thể cập nhật trạng thái dịch vụ.';
+      if (e.response?.data is Map) {
+        final d = e.response!.data as Map;
+        msg = d['message']?.toString() ?? d['title']?.toString() ?? msg;
+      }
+      throw Exception(msg);
+    }
   }
 
   @override
