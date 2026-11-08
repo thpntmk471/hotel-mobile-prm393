@@ -48,6 +48,7 @@ class ReservationProvider extends ChangeNotifier {
   }
 
   Future<bool> createReservation({
+    int? guestId,
     required String guestName,
     required String guestPhone,
     String? guestIdCard,
@@ -65,6 +66,7 @@ class ReservationProvider extends ChangeNotifier {
 
     try {
       await reservationRepository.createReservation(
+        guestId: guestId,
         guestName: guestName,
         guestPhone: guestPhone,
         guestIdCard: guestIdCard,

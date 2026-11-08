@@ -65,5 +65,79 @@ class RoomProvider extends ChangeNotifier {
     await roomRepository.updateHousekeepingStatus(roomId, status, rowVersion: rowVersion);
     await fetchRooms();
   }
-}
 
+  Future<bool> createRoom({
+    required String roomCode,
+    required int roomTypeId,
+    required int floorNumber,
+    String description = '',
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await roomRepository.createRoom(
+        roomCode: roomCode,
+        roomTypeId: roomTypeId,
+        floorNumber: floorNumber,
+        description: description,
+      );
+      await fetchRooms();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateRoom({
+    required int roomId,
+    required String roomCode,
+    required int roomTypeId,
+    required int floorNumber,
+    String description = '',
+    required String rowVersion,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await roomRepository.updateRoom(
+        roomId: roomId,
+        roomCode: roomCode,
+        roomTypeId: roomTypeId,
+        floorNumber: floorNumber,
+        description: description,
+        rowVersion: rowVersion,
+      );
+      await fetchRooms();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteRoom(int roomId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await roomRepository.deleteRoom(roomId);
+      await fetchRooms();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+}

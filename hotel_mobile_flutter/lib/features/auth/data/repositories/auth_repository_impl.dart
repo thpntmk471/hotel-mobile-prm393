@@ -19,7 +19,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Lưu session và token an toàn vào storage cục bộ
     await storageService.saveTokens(accessToken: entity.token);
-    await storageService.saveUserProfile(name: entity.fullName, role: entity.role);
+    await storageService.saveUserProfile(
+      name: entity.fullName,
+      role: entity.role,
+      email: entity.email,
+      phone: entity.phone,
+    );
 
     return entity;
   }
@@ -34,6 +39,8 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await storageService.getAccessToken();
     final name = storageService.getUserName();
     final role = storageService.getUserRole();
+    final email = storageService.getUserEmail();
+    final phone = storageService.getUserPhone();
 
     if (token != null && name != null) {
       return UserSession(
@@ -42,6 +49,8 @@ class AuthRepositoryImpl implements AuthRepository {
         fullName: name,
         role: role ?? 'Receptionist',
         token: token,
+        email: email,
+        phone: phone,
       );
     }
     return null;

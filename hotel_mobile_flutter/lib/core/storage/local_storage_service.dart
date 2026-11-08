@@ -28,16 +28,35 @@ class LocalStorageService {
     await _secureStorage.deleteAll();
     await _prefs.remove(StorageKeys.userName);
     await _prefs.remove(StorageKeys.userRole);
+    await _prefs.remove(StorageKeys.userEmail);
+    await _prefs.remove(StorageKeys.userPhone);
   }
 
   // SharedPreferences (Dùng cho thông tin hiển thị & cấu hình người dùng)
-  Future<void> saveUserProfile({required String name, required String role}) async {
+  Future<void> saveUserProfile({
+    required String name,
+    required String role,
+    String? email,
+    String? phone,
+  }) async {
     await _prefs.setString(StorageKeys.userName, name);
     await _prefs.setString(StorageKeys.userRole, role);
+    if (email != null) {
+      await _prefs.setString(StorageKeys.userEmail, email);
+    } else {
+      await _prefs.remove(StorageKeys.userEmail);
+    }
+    if (phone != null) {
+      await _prefs.setString(StorageKeys.userPhone, phone);
+    } else {
+      await _prefs.remove(StorageKeys.userPhone);
+    }
   }
 
   String? getUserName() => _prefs.getString(StorageKeys.userName);
   String? getUserRole() => _prefs.getString(StorageKeys.userRole);
+  String? getUserEmail() => _prefs.getString(StorageKeys.userEmail);
+  String? getUserPhone() => _prefs.getString(StorageKeys.userPhone);
 
   // Cấu hình giao diện & cài đặt ứng dụng
   Future<void> setDarkMode(bool isDark) async {

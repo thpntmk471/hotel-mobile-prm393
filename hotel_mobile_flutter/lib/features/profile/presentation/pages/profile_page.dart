@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../guest/presentation/pages/guest_list_page.dart';
+import '../../../room/presentation/pages/room_list_page.dart';
+import '../../../room_type/presentation/pages/room_type_list_page.dart';
 import '../providers/profile_provider.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -11,13 +14,30 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final session = authProvider.session;
     final profile = profileProvider.profile;
 
-    final name = profile?.fullName ?? authProvider.session?.fullName ?? 'Nhân viên';
-    final role = profile?.role ?? authProvider.session?.role ?? 'Receptionist';
-    final email = profile?.email ?? 'reception@hotelprm.com';
-    final phone = profile?.phone ?? '0901 234 567';
-    final department = profile?.department ?? 'Bộ phận Tiền sảnh & Lễ tân';
+    final name = (session?.fullName != null && session!.fullName.isNotEmpty)
+        ? session.fullName
+        : (profile?.fullName ?? 'Nhân viên Khách sạn');
+    final role = (session?.role != null && session!.role.isNotEmpty)
+        ? session.role
+        : (profile?.role ?? 'Receptionist');
+    final username = session?.username ?? 'user';
+    final email = (session?.email != null && session!.email!.isNotEmpty)
+        ? session.email!
+        : (profile?.email ?? '$username@hotelprm.com');
+    final phone = (session?.phone != null && session!.phone!.isNotEmpty)
+        ? session.phone!
+        : (profile?.phone ?? '0901 234 567');
+
+    String department = 'Bộ phận Lễ tân & Tiền sảnh';
+    final lowerRole = role.toLowerCase();
+    if (lowerRole.contains('admin')) {
+      department = 'Ban Quản trị & Điều hành Khách sạn';
+    } else if (lowerRole.contains('house') || lowerRole.contains('buồng') || lowerRole.contains('room')) {
+      department = 'Bộ phận Quản lý Buồng phòng';
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -163,6 +183,60 @@ class ProfilePage extends StatelessWidget {
                           content: Text('Đã dọn dẹp thành công 14.8 MB bộ nhớ đệm.'),
                           backgroundColor: AppColors.primary,
                         ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Mục: Quản trị nghiệp vụ khách sạn
+            _buildSectionHeader('QUẢN TRỊ NGHIỆP VỤ'),
+            Material(
+              color: Theme.of(context).cardColor,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.meeting_room, color: AppColors.primary),
+                    title: const Text('Quản lý Phòng (Rooms)'),
+                    subtitle: const Text('Thêm mới, sửa thông tin & vận hành buồng phòng'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RoomListPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.category, color: AppColors.primary),
+                    title: const Text('Quản lý Loại Phòng (Room Types)'),
+                    subtitle: const Text('Cấu hình các hạng phòng, giá niêm yết, sức chứa'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RoomTypeListPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.people, color: AppColors.primary),
+                    title: const Text('Quản lý Khách Hàng (Guests)'),
+                    subtitle: const Text('Danh sách hồ sơ khách lưu trú, CCCD, liên lạc'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const GuestListPage()),
                       );
                     },
                   ),

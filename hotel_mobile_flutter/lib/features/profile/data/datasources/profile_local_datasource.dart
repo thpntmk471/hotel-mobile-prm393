@@ -18,6 +18,8 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   Future<UserProfileModel> getProfile() async {
     final name = storageService.getUserName() ?? 'Lễ tân Demo';
     final role = storageService.getUserRole() ?? 'Receptionist';
+    final email = storageService.getUserEmail() ?? '${role.toLowerCase()}@hotelmanagement.vn';
+    final phone = storageService.getUserPhone() ?? '0901 234 567';
     final isDark = storageService.isDarkMode();
 
     return UserProfileModel(
@@ -25,12 +27,12 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
       username: name.toLowerCase().replaceAll(' ', '.'),
       fullName: name,
       role: role,
-      email: '${role.toLowerCase()}@hotelmanagement.vn',
-      phone: '0901 234 567',
+      email: email,
+      phone: phone,
       department: role == 'Housekeeping'
           ? 'Bộ phận Buồng phòng'
           : role == 'Admin'
-              ? 'Ban Quản trị Khách sạn'
+              ? 'Ban Quản trị & Điều hành Khách sạn'
               : 'Bộ phận Lễ tân & Tiền sảnh',
       joinedDate: DateTime(2024, 1, 10),
       isDarkMode: isDark,
@@ -55,7 +57,12 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 
   @override
   Future<void> saveProfile(UserProfileModel model) async {
-    await storageService.saveUserProfile(name: model.fullName, role: model.role);
+    await storageService.saveUserProfile(
+      name: model.fullName,
+      role: model.role,
+      email: model.email,
+      phone: model.phone,
+    );
     await storageService.setDarkMode(model.isDarkMode);
   }
 }

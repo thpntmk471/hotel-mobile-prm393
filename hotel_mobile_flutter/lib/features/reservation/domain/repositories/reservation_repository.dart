@@ -3,6 +3,7 @@ import '../entities/reservation.dart';
 abstract class ReservationRepository {
   Future<List<Reservation>> getReservations({String? search, String? status});
   Future<Reservation> createReservation({
+    int? guestId,
     required String guestName,
     required String guestPhone,
     String? guestIdCard,

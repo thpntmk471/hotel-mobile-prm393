@@ -36,6 +36,14 @@ import 'features/task/data/datasources/task_remote_datasource.dart';
 import 'features/task/data/repositories/task_repository_impl.dart';
 import 'features/task/domain/repositories/task_repository.dart';
 import 'features/task/presentation/providers/task_provider.dart';
+import 'features/room_type/data/datasources/room_type_remote_datasource.dart';
+import 'features/room_type/data/repositories/room_type_repository_impl.dart';
+import 'features/room_type/domain/repositories/room_type_repository.dart';
+import 'features/room_type/presentation/providers/room_type_provider.dart';
+import 'features/guest/data/datasources/guest_remote_datasource.dart';
+import 'features/guest/data/repositories/guest_repository_impl.dart';
+import 'features/guest/domain/repositories/guest_repository.dart';
+import 'features/guest/presentation/providers/guest_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,6 +82,12 @@ void main() async {
   final taskRemoteDataSource = TaskRemoteDataSourceImpl(dioClient.dio);
   final taskRepository = TaskRepositoryImpl(taskRemoteDataSource);
 
+  final roomTypeRemoteDataSource = RoomTypeRemoteDataSourceImpl(dioClient.dio);
+  final roomTypeRepository = RoomTypeRepositoryImpl(roomTypeRemoteDataSource);
+
+  final guestRemoteDataSource = GuestRemoteDataSourceImpl(dioClient.dio);
+  final guestRepository = GuestRepositoryImpl(guestRemoteDataSource);
+
   final profileLocalDataSource = ProfileLocalDataSourceImpl(storageService);
   final profileRepository = ProfileRepositoryImpl(profileLocalDataSource);
 
@@ -88,12 +102,20 @@ void main() async {
         Provider<StayRepository>.value(value: stayRepository),
         Provider<HotelServiceRepository>.value(value: hotelServiceRepository),
         Provider<TaskRepository>.value(value: taskRepository),
+        Provider<RoomTypeRepository>.value(value: roomTypeRepository),
+        Provider<GuestRepository>.value(value: guestRepository),
         Provider<ProfileRepository>.value(value: profileRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
         ),
         ChangeNotifierProvider(
           create: (_) => RoomProvider(roomRepository: roomRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RoomTypeProvider(roomTypeRepository: roomTypeRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GuestProvider(guestRepository: guestRepository),
         ),
         ChangeNotifierProvider(
           create: (_) =>

@@ -5,6 +5,9 @@ import '../models/room_model.dart';
 abstract class RoomRemoteDataSource {
   Future<List<RoomModel>> fetchRooms();
   Future<void> updateHousekeepingStatus(int roomId, String newStatus, {String rowVersion = ''});
+  Future<RoomModel> createRoom(Map<String, dynamic> data);
+  Future<RoomModel> updateRoom(int roomId, Map<String, dynamic> data);
+  Future<void> deleteRoom(int roomId);
 }
 
 class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
@@ -60,6 +63,41 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       // ignore: avoid_print
       print('❌ [RoomRemoteDataSource] updateHousekeepingStatus error: $e');
       throw Exception('Cập nhật trạng thái phòng thất bại: $e');
+    }
+  }
+
+  @override
+  Future<RoomModel> createRoom(Map<String, dynamic> data) async {
+    try {
+      final res = await dio.post(ApiConstants.roomService, data: data);
+      return RoomModel.fromJson(res.data as Map<String, dynamic>);
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [RoomRemoteDataSource] createRoom error: $e');
+      throw Exception('Lỗi thêm phòng mới: $e');
+    }
+  }
+
+  @override
+  Future<RoomModel> updateRoom(int roomId, Map<String, dynamic> data) async {
+    try {
+      final res = await dio.put('${ApiConstants.roomService}/$roomId', data: data);
+      return RoomModel.fromJson(res.data as Map<String, dynamic>);
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [RoomRemoteDataSource] updateRoom error: $e');
+      throw Exception('Lỗi cập nhật phòng: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteRoom(int roomId) async {
+    try {
+      await dio.delete('${ApiConstants.roomService}/$roomId');
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [RoomRemoteDataSource] deleteRoom error: $e');
+      throw Exception('Lỗi xóa phòng: $e');
     }
   }
 }

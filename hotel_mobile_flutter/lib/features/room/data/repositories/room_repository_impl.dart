@@ -41,5 +41,48 @@ class RoomRepositoryImpl implements RoomRepository {
   Future<void> updateHousekeepingStatus(int roomId, String newStatus, {String rowVersion = ''}) async {
     await remoteDataSource.updateHousekeepingStatus(roomId, newStatus, rowVersion: rowVersion);
   }
-}
 
+  @override
+  Future<Room> createRoom({
+    required String roomCode,
+    required int roomTypeId,
+    required int floorNumber,
+    String description = '',
+  }) async {
+    final payload = {
+      'roomCode': roomCode,
+      'roomTypeId': roomTypeId,
+      'floorNumber': floorNumber,
+      'description': description,
+      'operationalStatus': 1, // 1: Hoạt động
+      'housekeepingStatus': 3, // 3: Sạch
+    };
+    final model = await remoteDataSource.createRoom(payload);
+    return model.toEntity();
+  }
+
+  @override
+  Future<Room> updateRoom({
+    required int roomId,
+    required String roomCode,
+    required int roomTypeId,
+    required int floorNumber,
+    String description = '',
+    required String rowVersion,
+  }) async {
+    final payload = {
+      'roomCode': roomCode,
+      'roomTypeId': roomTypeId,
+      'floorNumber': floorNumber,
+      'description': description,
+      'rowVersion': rowVersion,
+    };
+    final model = await remoteDataSource.updateRoom(roomId, payload);
+    return model.toEntity();
+  }
+
+  @override
+  Future<void> deleteRoom(int roomId) async {
+    await remoteDataSource.deleteRoom(roomId);
+  }
+}

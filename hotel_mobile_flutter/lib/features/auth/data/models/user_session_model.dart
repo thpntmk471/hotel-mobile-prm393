@@ -7,6 +7,8 @@ class UserSessionModel {
   final String fullName;
   final String role;
   final String token;
+  final String? email;
+  final String? phone;
 
   UserSessionModel({
     required this.userId,
@@ -14,6 +16,8 @@ class UserSessionModel {
     required this.fullName,
     required this.role,
     required this.token,
+    this.email,
+    this.phone,
   });
 
   factory UserSessionModel.fromJson(Map<String, dynamic> json) {
@@ -111,12 +115,24 @@ class UserSessionModel {
     final rawId = userObj['id'] ?? userObj['Id'] ?? userObj['userId'] ?? 1;
     final userId = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 1;
 
+    // 7. Trích xuất Email & Phone
+    final rawEmail = userObj['email'] ?? userObj['Email'];
+    final email = rawEmail != null && rawEmail.toString().trim().isNotEmpty
+        ? rawEmail.toString().trim()
+        : null;
+    final rawPhone = userObj['phoneNumber'] ?? userObj['PhoneNumber'] ?? userObj['phone'];
+    final phone = rawPhone != null && rawPhone.toString().trim().isNotEmpty
+        ? rawPhone.toString().trim()
+        : null;
+
     return UserSessionModel(
       userId: userId,
       username: rawUsername.isNotEmpty ? rawUsername : 'user',
       fullName: fullName,
       role: extractedRole,
       token: token,
+      email: email,
+      phone: phone,
     );
   }
 
@@ -127,6 +143,8 @@ class UserSessionModel {
       'fullName': fullName,
       'role': role,
       'token': token,
+      'email': email,
+      'phone': phone,
     };
   }
 
@@ -137,6 +155,8 @@ class UserSessionModel {
       fullName: fullName,
       role: role,
       token: token,
+      email: email,
+      phone: phone,
     );
   }
 }

@@ -7,12 +7,16 @@ class RoomCard extends StatelessWidget {
   final Room room;
   final VoidCallback? onToggleHousekeeping;
   final VoidCallback? onBookNow;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const RoomCard({
     super.key,
     required this.room,
     this.onToggleHousekeeping,
     this.onBookNow,
+    this.onEdit,
+    this.onDelete,
   });
 
   String _getImageUrlForRoom(String typeName) {
@@ -135,13 +139,48 @@ class RoomCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      room.roomTypeName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        room.roomTypeName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                    if (onEdit != null || onDelete != null)
+                      PopupMenuButton<String>(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                        onSelected: (val) {
+                          if (val == 'edit') onEdit?.call();
+                          if (val == 'delete') onDelete?.call();
+                        },
+                        itemBuilder: (ctx) => [
+                          if (onEdit != null)
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                  SizedBox(width: 8),
+                                  Text('Sửa thông tin phòng'),
+                                ],
+                              ),
+                            ),
+                          if (onDelete != null)
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline, size: 18, color: AppColors.statusOccupiedText),
+                                  SizedBox(width: 8),
+                                  Text('Xóa phòng'),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     RichText(
                       text: TextSpan(
                         children: [

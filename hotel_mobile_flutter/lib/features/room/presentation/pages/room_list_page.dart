@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../reservation/presentation/pages/booking_page.dart';
+import '../../domain/entities/room.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
 
@@ -39,6 +40,160 @@ class _RoomListPageState extends State<RoomListPage> {
     super.dispose();
   }
 
+  void _showAddEditRoomDialog([Room? room]) {
+    final isEdit = room != null;
+    final codeCtrl = TextEditingController(text: room?.roomNumber ?? '');
+    final floorCtrl = TextEditingController(text: room?.floor.toString() ?? '1');
+    final descCtrl = TextEditingController();
+    int selectedRoomTypeId = room?.roomTypeId ?? 1;
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(isEdit ? 'Sửa thông tin phòng' : 'Thêm phòng mới'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: codeCtrl,
+                    decoration: const InputDecoration(labelText: 'Mã phòng (ví dụ: DEV-104)'),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã phòng' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<int>(
+                    initialValue: selectedRoomTypeId,
+                    decoration: const InputDecoration(labelText: 'Loại phòng'),
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('Phòng Standard (1)')),
+                      DropdownMenuItem(value: 2, child: Text('Phòng Deluxe (2)')),
+                      DropdownMenuItem(value: 3, child: Text('Phòng VIP Suite (3)')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setDialogState(() => selectedRoomTypeId = val);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: floorCtrl,
+                    decoration: const InputDecoration(labelText: 'Số tầng (1, 2, 3...)'),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => (int.tryParse(v ?? '') == null) ? 'Số tầng không hợp lệ' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: descCtrl,
+                    decoration: const InputDecoration(labelText: 'Mô tả thêm'),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  final provider = context.read<RoomProvider>();
+                  final messenger = ScaffoldMessenger.of(context);
+                  bool ok;
+                  if (isEdit) {
+                    ok = await provider.updateRoom(
+                      roomId: room.id,
+                      roomCode: codeCtrl.text.trim(),
+                      roomTypeId: selectedRoomTypeId,
+                      floorNumber: int.parse(floorCtrl.text.trim()),
+                      description: descCtrl.text.trim(),
+                      rowVersion: room.rowVersion,
+                    );
+                  } else {
+                    ok = await provider.createRoom(
+                      roomCode: codeCtrl.text.trim(),
+                      roomTypeId: selectedRoomTypeId,
+                      floorNumber: int.parse(floorCtrl.text.trim()),
+                      description: descCtrl.text.trim(),
+                    );
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) {
+                    if (ok) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(isEdit ? 'Cập nhật phòng thành công!' : 'Thêm phòng mới thành công!'),
+                          backgroundColor: AppColors.statusActiveText,
+                        ),
+                      );
+                    } else {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(provider.errorMessage ?? 'Thao tác thất bại!'),
+                          backgroundColor: AppColors.statusOccupiedText,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              child: Text(isEdit ? 'Lưu' : 'Thêm mới', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteRoomDialog(Room room) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xác nhận xóa phòng'),
+        content: Text('Bạn có chắc chắn muốn xóa phòng ${room.roomNumber} khỏi hệ thống không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Không'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusOccupiedText),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final provider = context.read<RoomProvider>();
+              final messenger = ScaffoldMessenger.of(context);
+              final ok = await provider.deleteRoom(room.id);
+              if (mounted) {
+                if (ok) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Đã xóa phòng ${room.roomNumber}!'),
+                      backgroundColor: AppColors.statusOccupiedText,
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(provider.errorMessage ?? 'Xóa phòng thất bại!'),
+                      backgroundColor: AppColors.statusOccupiedText,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Xóa', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final roomProvider = context.watch<RoomProvider>();
@@ -47,6 +202,19 @@ class _RoomListPageState extends State<RoomListPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Vận hành phòng'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => context.read<RoomProvider>().fetchRooms(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Thêm phòng', style: TextStyle(fontWeight: FontWeight.bold)),
+        onPressed: () => _showAddEditRoomDialog(),
       ),
       body: Column(
         children: [
@@ -245,6 +413,8 @@ class _RoomListPageState extends State<RoomListPage> {
                             ),
                           );
                         },
+                        onEdit: () => _showAddEditRoomDialog(room),
+                        onDelete: () => _showDeleteRoomDialog(room),
                       );
                     },
                   ),

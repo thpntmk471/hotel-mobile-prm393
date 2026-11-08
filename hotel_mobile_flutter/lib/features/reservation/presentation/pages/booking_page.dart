@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/sticky_bottom_action_bar.dart';
+import '../../../guest/domain/entities/guest.dart';
+import '../../../guest/presentation/providers/guest_provider.dart';
 import '../../../room/domain/entities/room.dart';
 import '../../../room/presentation/providers/room_provider.dart';
 import '../../domain/entities/reservation.dart';
@@ -23,6 +25,11 @@ class _BookingPageState extends State<BookingPage> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _idCardController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
+
+  int? _selectedGuestId;
+  Guest? _selectedGuest;
 
   // 1. Tiêu chí lọc ngày
   late DateTime _checkInDate;
@@ -66,6 +73,10 @@ class _BookingPageState extends State<BookingPage> {
       if (resP.reservations.isEmpty) {
         resP.fetchReservations();
       }
+      final guestP = context.read<GuestProvider>();
+      if (guestP.guests.isEmpty) {
+        guestP.fetchGuests();
+      }
     });
   }
 
@@ -74,6 +85,8 @@ class _BookingPageState extends State<BookingPage> {
     _nameController.dispose();
     _phoneController.dispose();
     _idCardController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -442,6 +455,120 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
+  void _showSelectGuestModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final guestProvider = context.watch<GuestProvider>();
+            final guests = guestProvider.guests;
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Chọn khách hàng đã có',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(modalCtx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Tìm theo tên, SĐT hoặc CCCD...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (val) {
+                      context.read<GuestProvider>().fetchGuests(keyword: val.trim());
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: guestProvider.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : guests.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.person_off_outlined, size: 48, color: Colors.grey[400]),
+                                    const SizedBox(height: 8),
+                                    const Text('Không tìm thấy khách hàng nào'),
+                                  ],
+                                ),
+                              )
+                            : ListView.separated(
+                                itemCount: guests.length,
+                                separatorBuilder: (_, __) => const Divider(height: 1),
+                                itemBuilder: (ctx, idx) {
+                                  final g = guests[idx];
+                                  final isSelected = g.id == _selectedGuestId;
+                                  return ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    leading: CircleAvatar(
+                                      backgroundColor: isSelected ? AppColors.primary : AppColors.primaryLight,
+                                      child: Text(
+                                        g.fullName.isNotEmpty ? g.fullName[0].toUpperCase() : 'G',
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.white : AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(g.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                    subtitle: Text('SĐT: ${g.phoneNumber} • CCCD: ${g.documentNumber}'),
+                                    trailing: isSelected
+                                        ? const Icon(Icons.check_circle, color: AppColors.primary)
+                                        : const Icon(Icons.arrow_forward_ios, size: 14),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedGuestId = g.id;
+                                        _selectedGuest = g;
+                                        _nameController.text = g.fullName;
+                                        _phoneController.text = g.phoneNumber;
+                                        _idCardController.text = g.documentNumber;
+                                        _emailController.text = g.email;
+                                        _addressController.text = g.address;
+                                      });
+                                      Navigator.pop(modalCtx);
+                                    },
+                                  );
+                                },
+                              ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _onSubmit() async {
     if (_selectedRoom == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -454,7 +581,36 @@ class _BookingPageState extends State<BookingPage> {
     }
 
     if (_formKey.currentState?.validate() ?? false) {
-      final success = await context.read<ReservationProvider>().createReservation(
+      final resProvider = context.read<ReservationProvider>();
+      final guestProvider = context.read<GuestProvider>();
+      int? guestId = _selectedGuestId;
+
+      // Nếu chưa chọn khách có sẵn (tức nhập khách mới), tự động lưu khách mới vào hệ thống GuestAPI
+      if (guestId == null) {
+        final name = _nameController.text.trim();
+        final phone = _phoneController.text.trim();
+        final docNum = _idCardController.text.trim().isNotEmpty
+            ? _idCardController.text.trim()
+            : 'CCCD-${phone.replaceAll(RegExp(r'\s+'), '')}';
+        final email = _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null;
+        final address = _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null;
+
+        final newGuest = await guestProvider.createGuest(
+          fullName: name,
+          phoneNumber: phone,
+          email: email,
+          documentNumber: docNum,
+          address: address,
+          notes: 'Được tạo tự động khi đặt phòng',
+        );
+
+        if (newGuest != null) {
+          guestId = newGuest.id;
+        }
+      }
+
+      final success = await resProvider.createReservation(
+            guestId: guestId,
             guestName: _nameController.text.trim(),
             guestPhone: _phoneController.text.trim(),
             guestIdCard: _idCardController.text.trim().isNotEmpty
@@ -1120,10 +1276,68 @@ class _BookingPageState extends State<BookingPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Thông tin khách hàng',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Thông tin khách hàng',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => _showSelectGuestModal(context),
+                          icon: const Icon(Icons.person_search, size: 18),
+                          label: const Text('Chọn khách có sẵn', style: TextStyle(fontSize: 12.5)),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (_selectedGuestId != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: AppColors.primary, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Đã liên kết hồ sơ: ${_selectedGuest?.fullName ?? _nameController.text} (ID: #$_selectedGuestId)',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedGuestId = null;
+                                  _selectedGuest = null;
+                                  _nameController.clear();
+                                  _phoneController.clear();
+                                  _idCardController.clear();
+                                  _emailController.clear();
+                                  _addressController.clear();
+                                });
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(4),
+                                child: Icon(Icons.close, size: 16, color: AppColors.primary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     CustomTextField(
                       label: 'Họ và tên khách hàng *',
@@ -1155,6 +1369,13 @@ class _BookingPageState extends State<BookingPage> {
                       label: 'Số CCCD / Hộ chiếu (Tùy chọn)',
                       hintText: 'Nhập số CCCD/Passport nếu có',
                       controller: _idCardController,
+                    ),
+                    const SizedBox(height: 14),
+                    CustomTextField(
+                      label: 'Email (Tùy chọn)',
+                      hintText: 'email@example.com',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                     ),
                   ],
                 ),

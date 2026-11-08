@@ -29,6 +29,7 @@ class ReservationRepositoryImpl implements ReservationRepository {
 
   @override
   Future<Reservation> createReservation({
+    int? guestId,
     required String guestName,
     required String guestPhone,
     String? guestIdCard,
@@ -46,7 +47,7 @@ class ReservationRepositoryImpl implements ReservationRepository {
         '${checkOutDate.year}-${checkOutDate.month.toString().padLeft(2, '0')}-${checkOutDate.day.toString().padLeft(2, '0')}';
 
     final payload = {
-      'guestId': 1,
+      'guestId': guestId ?? 1,
       'roomId': roomId,
       'checkInDate': inDateStr,
       'checkOutDate': outDateStr,
