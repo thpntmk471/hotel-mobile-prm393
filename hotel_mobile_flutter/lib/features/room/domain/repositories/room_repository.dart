@@ -9,6 +9,6 @@ abstract class RoomRepository {
     String? housekeepingStatus,
   });
 
-  Future<void> updateHousekeepingStatus(int roomId, String newStatus);
+  Future<void> updateHousekeepingStatus(int roomId, String newStatus, {String rowVersion = ''});
 }
 

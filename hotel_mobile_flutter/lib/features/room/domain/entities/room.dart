@@ -6,8 +6,9 @@ class Room {
   final String roomTypeName;
   final double pricePerNight;
   final String operationalStatus; // Hoạt động, Tạm khóa
-  final String housekeepingStatus; // Sạch, Cần dọn, Đang dọn
+  final String housekeepingStatus; // Sạch, Cần dọn, Đang dọn, Đã kiểm tra
   final int capacity; // Sức chứa tối đa (số người)
+  final String rowVersion;
 
   const Room({
     required this.id,
@@ -19,6 +20,7 @@ class Room {
     required this.operationalStatus,
     required this.housekeepingStatus,
     this.capacity = 2,
+    this.rowVersion = '',
   });
 
   int get maxGuests {

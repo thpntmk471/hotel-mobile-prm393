@@ -1,5 +1,7 @@
 class Reservation {
-  final String id; // Mã đặt phòng: RSV...
+  final int numericId;
+  final String reservationCode;
+  final String id; // Mã đặt phòng: DEV-RES... hoặc số ID
   final String guestName;
   final String guestPhone;
   final String? guestIdCard;
@@ -13,8 +15,11 @@ class Reservation {
   final double totalPrice;
   final String status; // Đã xác nhận, Đã nhận phòng, Đã trả phòng, Đã hủy
   final DateTime createdAt;
+  final String rowVersion;
 
   const Reservation({
+    this.numericId = 0,
+    this.reservationCode = '',
     required this.id,
     required this.guestName,
     required this.guestPhone,
@@ -29,6 +34,7 @@ class Reservation {
     required this.totalPrice,
     required this.status,
     required this.createdAt,
+    this.rowVersion = '',
   });
 
   int get numberOfNights {

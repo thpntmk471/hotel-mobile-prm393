@@ -1,6 +1,8 @@
 import '../../domain/entities/reservation.dart';
 
 class ReservationModel {
+  final int numericId;
+  final String reservationCode;
   final String id;
   final String guestName;
   final String guestPhone;
@@ -15,8 +17,11 @@ class ReservationModel {
   final double totalPrice;
   final String status;
   final DateTime createdAt;
+  final String rowVersion;
 
   ReservationModel({
+    this.numericId = 0,
+    this.reservationCode = '',
     required this.id,
     required this.guestName,
     required this.guestPhone,
@@ -31,11 +36,14 @@ class ReservationModel {
     required this.totalPrice,
     required this.status,
     required this.createdAt,
+    this.rowVersion = '',
   });
 
   factory ReservationModel.fromJson(Map<String, dynamic> json) {
-    final rawId = json['id'] ?? json['Id'] ?? json['reservationCode'] ?? json['ReservationCode'];
-    final idStr = rawId?.toString() ?? 'RSV${DateTime.now().millisecondsSinceEpoch}';
+    final rawNumId = json['id'] ?? json['Id'];
+    final numId = rawNumId is int ? rawNumId : int.tryParse(rawNumId?.toString() ?? '') ?? 0;
+    final resCode = (json['reservationCode'] ?? json['ReservationCode'] ?? '').toString();
+    final idStr = resCode.isNotEmpty ? resCode : (numId > 0 ? numId.toString() : 'RSV${DateTime.now().millisecondsSinceEpoch}');
 
     final guestName = json['guestName'] ?? json['GuestName'] ?? json['customerName'] ?? 'Khách đặt phòng';
     final guestPhone = json['guestPhone'] ?? json['GuestPhone'] ?? json['phoneNumber'] ?? '0901234567';
@@ -72,6 +80,8 @@ class ReservationModel {
     }
 
     return ReservationModel(
+      numericId: numId,
+      reservationCode: resCode,
       id: idStr,
       guestName: guestName.toString(),
       guestPhone: guestPhone.toString(),
@@ -86,12 +96,14 @@ class ReservationModel {
       totalPrice: totalPrice,
       status: statusStr,
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      rowVersion: (json['rowVersion'] ?? json['RowVersion'] ?? '').toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': numericId > 0 ? numericId : id,
+      'reservationCode': reservationCode,
       'guestName': guestName,
       'guestPhone': guestPhone,
       'guestIdCard': guestIdCard,
@@ -105,11 +117,14 @@ class ReservationModel {
       'totalPrice': totalPrice,
       'status': status,
       'createdAt': createdAt.toIso8601String(),
+      'rowVersion': rowVersion,
     };
   }
 
   Reservation toEntity() {
     return Reservation(
+      numericId: numericId,
+      reservationCode: reservationCode,
       id: id,
       guestName: guestName,
       guestPhone: guestPhone,
@@ -124,6 +139,7 @@ class ReservationModel {
       totalPrice: totalPrice,
       status: status,
       createdAt: createdAt,
+      rowVersion: rowVersion,
     );
   }
 }

@@ -21,13 +21,13 @@ class HotelServiceItemModel {
 
   factory HotelServiceItemModel.fromJson(Map<String, dynamic> json) {
     return HotelServiceItemModel(
-      id: json['id'] ?? 1,
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name'] ?? json['serviceName'] ?? 'Dịch vụ',
-      category: json['category'] ?? json['type'] ?? 'F&B',
-      price: (json['price'] ?? json['unitPrice'] ?? 50000).toDouble(),
+      category: json['category'] ?? json['type'] ?? 'Dịch vụ',
+      price: (json['currentPrice'] ?? json['price'] ?? json['unitPrice'] ?? 0).toDouble(),
       unit: json['unit'] ?? 'Lượt',
-      description: json['description'] ?? 'Mô tả dịch vụ khách sạn',
-      isAvailable: json['isAvailable'] ?? json['isActive'] ?? true,
+      description: json['description'] ?? '',
+      isAvailable: json['isActive'] ?? json['isAvailable'] ?? true,
     );
   }
 
@@ -68,17 +68,29 @@ class ServiceUsageOrderModel {
   });
 
   factory ServiceUsageOrderModel.fromJson(Map<String, dynamic> json) {
+    final qty = (json['quantity'] is num)
+        ? (json['quantity'] as num).toInt()
+        : int.tryParse(json['quantity']?.toString() ?? '1') ?? 1;
+    final uPrice = (json['unitPrice'] is num)
+        ? (json['unitPrice'] as num).toDouble()
+        : double.tryParse(json['unitPrice']?.toString() ?? '0') ?? 0.0;
+    final tPrice = (json['amount'] is num)
+        ? (json['amount'] as num).toDouble()
+        : (json['totalPrice'] is num)
+            ? (json['totalPrice'] as num).toDouble()
+            : uPrice * qty;
+
     return ServiceUsageOrderModel(
-      id: json['id'] ?? DateTime.now().millisecondsSinceEpoch % 10000,
-      stayId: json['stayId'] ?? 1,
-      roomNumber: json['roomNumber'] ?? 'DEV-101',
-      serviceId: json['serviceId'] ?? 1,
-      serviceName: json['serviceName'] ?? 'Ăn sáng Buffet',
-      quantity: json['quantity'] ?? 1,
-      unitPrice: (json['unitPrice'] ?? 60000).toDouble(),
-      totalPrice: (json['totalPrice'] ?? 60000).toDouble(),
-      orderTime: DateTime.tryParse(json['orderTime'] ?? '') ?? DateTime.now(),
-      status: json['status'] ?? 'Đang giao',
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      stayId: json['stayId'] is int ? json['stayId'] : int.tryParse(json['stayId']?.toString() ?? '0') ?? 0,
+      roomNumber: json['roomNumber'] ?? 'Stay #${json['stayId'] ?? ''}',
+      serviceId: json['hotelServiceId'] ?? json['serviceId'] ?? 0,
+      serviceName: json['serviceNameSnapshot'] ?? json['serviceName'] ?? 'Dịch vụ',
+      quantity: qty,
+      unitPrice: uPrice,
+      totalPrice: tPrice,
+      orderTime: DateTime.tryParse(json['usedAt']?.toString() ?? json['orderTime']?.toString() ?? '') ?? DateTime.now(),
+      status: json['status'] ?? 'Đã ghi nhận',
     );
   }
 

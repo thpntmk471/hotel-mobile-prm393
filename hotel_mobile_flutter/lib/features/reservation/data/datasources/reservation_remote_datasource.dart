@@ -5,92 +5,13 @@ import '../models/reservation_model.dart';
 abstract class ReservationRemoteDataSource {
   Future<List<ReservationModel>> fetchReservations();
   Future<ReservationModel> createReservation(Map<String, dynamic> payload);
-  Future<void> updateStatus(String reservationId, String newStatus);
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''});
 }
 
 class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   final Dio dio;
 
   ReservationRemoteDataSourceImpl(this.dio);
-
-  // Mock data bám sát dữ liệu hiển thị trên Web Backend (PRN232)
-  final List<ReservationModel> _mockReservations = [
-    ReservationModel(
-      id: 'RSV334E35DF4B',
-      guestName: 'Khách Test F07',
-      guestPhone: '0912345678',
-      roomId: 1,
-      roomNumber: 'F09TEST-101',
-      roomTypeName: 'Phòng Standard',
-      pricePerNight: 450000,
-      checkInDate: DateTime.now().subtract(const Duration(days: 2)),
-      checkOutDate: DateTime.now(),
-      numberOfGuests: 1,
-      totalPrice: 900000,
-      status: 'Đã nhận phòng',
-      createdAt: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    ReservationModel(
-      id: 'RSV5F939B8987',
-      guestName: 'Khách Test F07',
-      guestPhone: '0912345678',
-      roomId: 5,
-      roomNumber: 'DEV-301',
-      roomTypeName: 'Phòng VIP Suite',
-      pricePerNight: 1100000,
-      checkInDate: DateTime.now().subtract(const Duration(days: 2)),
-      checkOutDate: DateTime.now(),
-      numberOfGuests: 1,
-      totalPrice: 2200000,
-      status: 'Đã trả phòng',
-      createdAt: DateTime.now().subtract(const Duration(days: 4)),
-    ),
-    ReservationModel(
-      id: 'DEV-RES-004',
-      guestName: 'Phạm Ngọc Mai',
-      guestPhone: '0987654321',
-      roomId: 4,
-      roomNumber: 'DEV-202',
-      roomTypeName: 'Phòng Deluxe',
-      pricePerNight: 700000,
-      checkInDate: DateTime.now().subtract(const Duration(days: 1)),
-      checkOutDate: DateTime.now().add(const Duration(days: 1)),
-      numberOfGuests: 2,
-      totalPrice: 1400000,
-      status: 'Đã xác nhận',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    ReservationModel(
-      id: 'DEV-RES-003',
-      guestName: 'Lê Quốc Bảo',
-      guestPhone: '0933221100',
-      roomId: 2,
-      roomNumber: 'DEV-102',
-      roomTypeName: 'Phòng Standard',
-      pricePerNight: 450000,
-      checkInDate: DateTime.now().subtract(const Duration(days: 2)),
-      checkOutDate: DateTime.now(),
-      numberOfGuests: 1,
-      totalPrice: 900000,
-      status: 'Đã xác nhận',
-      createdAt: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    ReservationModel(
-      id: 'DEV-RES-002',
-      guestName: 'Trần Thu Hà',
-      guestPhone: '0944556677',
-      roomId: 3,
-      roomNumber: 'DEV-201',
-      roomTypeName: 'Phòng Deluxe',
-      pricePerNight: 700000,
-      checkInDate: DateTime.now().subtract(const Duration(days: 7)),
-      checkOutDate: DateTime.now().subtract(const Duration(days: 5)),
-      numberOfGuests: 1,
-      totalPrice: 1400000,
-      status: 'Đã trả phòng',
-      createdAt: DateTime.now().subtract(const Duration(days: 8)),
-    ),
-  ];
 
   @override
   Future<List<ReservationModel>> fetchReservations() async {
@@ -105,9 +26,11 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
             .map((e) => ReservationModel.fromJson(e as Map<String, dynamic>))
             .toList();
       }
-      return _mockReservations;
-    } catch (_) {
-      return _mockReservations;
+      return [];
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [ReservationRemoteDataSource] fetchReservations error: $e');
+      throw Exception('Không thể tải danh sách đặt phòng từ máy chủ: $e');
     }
   }
 
@@ -115,50 +38,31 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   Future<ReservationModel> createReservation(Map<String, dynamic> payload) async {
     try {
       final response = await dio.post(ApiConstants.reservationService, data: payload);
-      final model = ReservationModel.fromJson(response.data as Map<String, dynamic>);
-      _mockReservations.insert(0, model);
-      return model;
-    } catch (_) {
-      final model = ReservationModel.fromJson(payload);
-      _mockReservations.insert(0, model);
-      return model;
+      return ReservationModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ [ReservationRemoteDataSource] createReservation error: $e');
+      throw Exception('Lỗi tạo đơn đặt phòng trên hệ thống: $e');
     }
   }
 
   @override
-  Future<void> updateStatus(String reservationId, String newStatus) async {
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''}) async {
     try {
       final idNum = int.tryParse(reservationId);
       if (idNum != null && (newStatus == 'Đã hủy' || newStatus == 'Cancelled')) {
         await dio.post(
           '${ApiConstants.reservationService}/$idNum/cancel',
-          data: {'cancellationReason': 'Khách yêu cầu hủy qua ứng dụng Mobile'},
+          data: {
+            'reason': 'Khách yêu cầu hủy qua ứng dụng Mobile',
+            'rowVersion': rowVersion,
+          },
         );
       }
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ [ReservationRemoteDataSource] updateStatus error: $e');
-    }
-
-    final idx = _mockReservations.indexWhere((r) => r.id == reservationId);
-    if (idx != -1) {
-      final r = _mockReservations[idx];
-      _mockReservations[idx] = ReservationModel(
-        id: r.id,
-        guestName: r.guestName,
-        guestPhone: r.guestPhone,
-        guestIdCard: r.guestIdCard,
-        roomId: r.roomId,
-        roomNumber: r.roomNumber,
-        roomTypeName: r.roomTypeName,
-        pricePerNight: r.pricePerNight,
-        checkInDate: r.checkInDate,
-        checkOutDate: r.checkOutDate,
-        numberOfGuests: r.numberOfGuests,
-        totalPrice: r.totalPrice,
-        status: newStatus,
-        createdAt: r.createdAt,
-      );
+      print('❌ [ReservationRemoteDataSource] updateStatus error: $e');
+      throw Exception('Lỗi cập nhật trạng thái đơn đặt: $e');
     }
   }
 }

@@ -14,6 +14,6 @@ abstract class ReservationRepository {
     required DateTime checkOutDate,
     required int numberOfGuests,
   });
-  Future<void> updateStatus(String reservationId, String newStatus);
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''});
 }
 

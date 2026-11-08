@@ -40,35 +40,18 @@ class ReservationRepositoryImpl implements ReservationRepository {
     required DateTime checkOutDate,
     required int numberOfGuests,
   }) async {
-    final nights = checkOutDate.difference(checkInDate).inDays;
-    final validNights = nights <= 0 ? 1 : nights;
-    final total = pricePerNight * validNights;
-
     final inDateStr =
         '${checkInDate.year}-${checkInDate.month.toString().padLeft(2, '0')}-${checkInDate.day.toString().padLeft(2, '0')}';
     final outDateStr =
         '${checkOutDate.year}-${checkOutDate.month.toString().padLeft(2, '0')}-${checkOutDate.day.toString().padLeft(2, '0')}';
 
     final payload = {
-      // Dữ liệu chuẩn DTO gửi lên .NET Backend (CreateReservationDto)
       'guestId': 1,
       'roomId': roomId,
       'checkInDate': inDateStr,
       'checkOutDate': outDateStr,
       'numberOfGuests': numberOfGuests,
-      'notes': 'Khách hàng: $guestName - SĐT: $guestPhone (Mobile App)',
-
-      // Dữ liệu mở rộng để đồng bộ UI và Mock Fallback
-      'id': 'RSV${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-      'guestName': guestName,
-      'guestPhone': guestPhone,
-      'guestIdCard': guestIdCard,
-      'roomNumber': roomNumber,
-      'roomTypeName': roomTypeName,
-      'pricePerNight': pricePerNight,
-      'totalPrice': total,
-      'status': 'Đã xác nhận',
-      'createdAt': DateTime.now().toIso8601String(),
+      'notes': 'Khách: $guestName - SĐT: $guestPhone${guestIdCard != null ? ' - CCCD: $guestIdCard' : ''}',
     };
 
     final createdModel = await remoteDataSource.createReservation(payload);
@@ -76,8 +59,8 @@ class ReservationRepositoryImpl implements ReservationRepository {
   }
 
   @override
-  Future<void> updateStatus(String reservationId, String newStatus) async {
-    await remoteDataSource.updateStatus(reservationId, newStatus);
+  Future<void> updateStatus(String reservationId, String newStatus, {String rowVersion = ''}) async {
+    await remoteDataSource.updateStatus(reservationId, newStatus, rowVersion: rowVersion);
   }
 }
 

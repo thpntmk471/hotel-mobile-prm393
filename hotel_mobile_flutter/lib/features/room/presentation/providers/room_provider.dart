@@ -57,12 +57,12 @@ class RoomProvider extends ChangeNotifier {
 
   Future<void> toggleHousekeepingStatus(Room room) async {
     final nextStatus = room.housekeepingStatus == 'Sạch' ? 'Cần dọn' : 'Sạch';
-    await roomRepository.updateHousekeepingStatus(room.id, nextStatus);
+    await roomRepository.updateHousekeepingStatus(room.id, nextStatus, rowVersion: room.rowVersion);
     await fetchRooms();
   }
 
-  Future<void> setHousekeepingStatus(int roomId, String status) async {
-    await roomRepository.updateHousekeepingStatus(roomId, status);
+  Future<void> setHousekeepingStatus(int roomId, String status, {String rowVersion = ''}) async {
+    await roomRepository.updateHousekeepingStatus(roomId, status, rowVersion: rowVersion);
     await fetchRooms();
   }
 }

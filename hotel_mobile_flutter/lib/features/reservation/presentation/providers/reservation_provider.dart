@@ -86,8 +86,8 @@ class ReservationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateStatus(String id, String newStatus) async {
-    await reservationRepository.updateStatus(id, newStatus);
+  Future<void> updateStatus(String id, String newStatus, {String rowVersion = ''}) async {
+    await reservationRepository.updateStatus(id, newStatus, rowVersion: rowVersion);
     await fetchReservations();
   }
 }

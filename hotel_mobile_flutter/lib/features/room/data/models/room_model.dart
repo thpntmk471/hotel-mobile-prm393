@@ -10,6 +10,7 @@ class RoomModel {
   final String operationalStatus;
   final String housekeepingStatus;
   final int capacity;
+  final String rowVersion;
 
   RoomModel({
     required this.id,
@@ -21,23 +22,27 @@ class RoomModel {
     required this.operationalStatus,
     required this.housekeepingStatus,
     this.capacity = 2,
+    this.rowVersion = '',
   });
 
   factory RoomModel.fromJson(Map<String, dynamic> json) {
     final typeName = (json['roomTypeName'] ?? json['RoomTypeName'] ?? json['type'] ?? 'Phòng Standard').toString();
     final cap = json['capacity'] ?? json['maxGuests'] ?? (typeName.toLowerCase().contains('suite') || typeName.toLowerCase().contains('fam') ? 4 : 2);
 
-    // Chuyển đổi HousekeepingStatus từ byte của .NET (1: Sạch, 2: Cần dọn, 3: Đang kiểm tra, 4: Không sử dụng)
+    // Chuyển đổi HousekeepingStatus từ byte của .NET Backend:
+    // 1: Cần dọn (Dirty), 2: Đang dọn (InProgress), 3: Sạch (Clean), 4: Đã kiểm tra (Inspected)
     final rawHk = json['housekeepingStatus'] ?? json['HousekeepingStatus'];
     String hkStatus = 'Sạch';
     if (rawHk is int || (rawHk != null && int.tryParse(rawHk.toString()) != null)) {
       final hkInt = rawHk is int ? rawHk : int.parse(rawHk.toString());
-      if (hkInt == 2) {
+      if (hkInt == 1) {
         hkStatus = 'Cần dọn';
+      } else if (hkInt == 2) {
+        hkStatus = 'Đang dọn';
       } else if (hkInt == 3) {
-        hkStatus = 'Đang kiểm tra';
+        hkStatus = 'Sạch';
       } else if (hkInt == 4) {
-        hkStatus = 'Bảo trì';
+        hkStatus = 'Đã kiểm tra';
       } else {
         hkStatus = 'Sạch';
       }
@@ -64,6 +69,7 @@ class RoomModel {
       operationalStatus: opStatus,
       housekeepingStatus: hkStatus,
       capacity: cap is int ? cap : int.tryParse(cap.toString()) ?? 2,
+      rowVersion: (json['rowVersion'] ?? json['RowVersion'] ?? '').toString(),
     );
   }
 
@@ -78,6 +84,7 @@ class RoomModel {
       'operationalStatus': operationalStatus,
       'housekeepingStatus': housekeepingStatus,
       'capacity': capacity,
+      'rowVersion': rowVersion,
     };
   }
 
@@ -92,6 +99,7 @@ class RoomModel {
       operationalStatus: operationalStatus,
       housekeepingStatus: housekeepingStatus,
       capacity: capacity,
+      rowVersion: rowVersion,
     );
   }
 }

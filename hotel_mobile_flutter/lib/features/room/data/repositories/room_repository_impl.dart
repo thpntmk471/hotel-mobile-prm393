@@ -38,8 +38,8 @@ class RoomRepositoryImpl implements RoomRepository {
   }
 
   @override
-  Future<void> updateHousekeepingStatus(int roomId, String newStatus) async {
-    await remoteDataSource.updateHousekeepingStatus(roomId, newStatus);
+  Future<void> updateHousekeepingStatus(int roomId, String newStatus, {String rowVersion = ''}) async {
+    await remoteDataSource.updateHousekeepingStatus(roomId, newStatus, rowVersion: rowVersion);
   }
 }
 

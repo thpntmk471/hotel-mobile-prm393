@@ -13,48 +13,6 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
 
   TaskRemoteDataSourceImpl(this.dio);
 
-  final List<HousekeepingTaskModel> _mockTasks = [
-    HousekeepingTaskModel(
-      id: 1,
-      taskCode: 'DEV-TASK-001',
-      roomId: 3,
-      roomNumber: 'DEV-201',
-      floor: 2,
-      roomTypeName: 'Phòng Deluxe',
-      taskType: 'Dọn phòng sau check-out',
-      priority: 'Cao',
-      status: 'Chờ nhận',
-      createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
-    ),
-    HousekeepingTaskModel(
-      id: 2,
-      taskCode: 'DEV-TASK-002',
-      roomId: 2,
-      roomNumber: 'DEV-102',
-      floor: 1,
-      roomTypeName: 'Phòng Standard',
-      taskType: 'Bổ sung khăn & Minibar',
-      priority: 'Trung bình',
-      status: 'Đang dọn',
-      assignedStaff: 'Buồng phòng Demo',
-      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-    ),
-    HousekeepingTaskModel(
-      id: 3,
-      taskCode: 'DEV-TASK-003',
-      roomId: 5,
-      roomNumber: 'DEV-301',
-      floor: 3,
-      roomTypeName: 'Phòng VIP Suite',
-      taskType: 'Tổng vệ sinh định kỳ',
-      priority: 'Thấp',
-      status: 'Hoàn thành',
-      assignedStaff: 'Buồng phòng Demo',
-      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      completedAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-  ];
-
   @override
   Future<List<HousekeepingTaskModel>> fetchTasks() async {
     try {
@@ -68,11 +26,11 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
             .map((e) => HousekeepingTaskModel.fromJson(e as Map<String, dynamic>))
             .toList();
       }
-      return _mockTasks;
+      return [];
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ [TaskRemoteDataSource] fetchTasks error: $e');
-      return _mockTasks;
+      print('❌ [TaskRemoteDataSource] fetchTasks error: $e');
+      throw Exception('Không thể tải danh sách nhiệm vụ từ máy chủ: $e');
     }
   }
 
@@ -80,7 +38,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<void> updateTaskStatus(int taskId, String status, {String? staffName}) async {
     try {
       if (status == 'Đang dọn' || status == 'InProgress') {
-        // Backend: PUT /api/hotel-tasks/{id}/progress với status = 3
+        // Backend: PUT /api/hotel-tasks/{id}/progress với status = 3 (Bắt đầu dọn)
         await dio.put(
           '${ApiConstants.taskService}/$taskId/progress',
           data: {'status': 3},
@@ -96,26 +54,8 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       }
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ [TaskRemoteDataSource] updateTaskStatus error: $e');
-    }
-
-    final idx = _mockTasks.indexWhere((t) => t.id == taskId);
-    if (idx != -1) {
-      final cur = _mockTasks[idx];
-      _mockTasks[idx] = HousekeepingTaskModel(
-        id: cur.id,
-        taskCode: cur.taskCode,
-        roomId: cur.roomId,
-        roomNumber: cur.roomNumber,
-        floor: cur.floor,
-        roomTypeName: cur.roomTypeName,
-        taskType: cur.taskType,
-        priority: cur.priority,
-        status: status,
-        assignedStaff: staffName ?? cur.assignedStaff,
-        createdAt: cur.createdAt,
-        completedAt: status == 'Hoàn thành' ? DateTime.now() : cur.completedAt,
-      );
+      print('❌ [TaskRemoteDataSource] updateTaskStatus error: $e');
+      throw Exception('Lỗi cập nhật tiến độ công việc: $e');
     }
   }
 
@@ -131,29 +71,14 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           'title': payload['taskType'] ?? 'Dọn phòng sau check-out',
           'description': 'Nhiệm vụ dọn dẹp vệ sinh phòng ${payload['roomNumber']} tạo từ Mobile App',
           'priority': 2, // 2: Trung bình
-          'createdByAccountId': 2,
+          'createdByAccountId': payload['createdByAccountId'] ?? 2,
         },
       );
-      final model = HousekeepingTaskModel.fromJson(res.data as Map<String, dynamic>);
-      _mockTasks.insert(0, model);
-      return model;
+      return HousekeepingTaskModel.fromJson(res.data as Map<String, dynamic>);
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ [TaskRemoteDataSource] createTask error: $e');
-      final model = HousekeepingTaskModel(
-        id: _mockTasks.length + 1,
-        taskCode: 'DEV-TASK-00${_mockTasks.length + 1}',
-        roomId: payload['roomId'] ?? 1,
-        roomNumber: payload['roomNumber'] ?? 'DEV-101',
-        floor: payload['floor'] ?? 1,
-        roomTypeName: payload['roomTypeName'] ?? 'Phòng Standard',
-        taskType: payload['taskType'] ?? 'Dọn phòng',
-        priority: payload['priority'] ?? 'Trung bình',
-        status: 'Chờ nhận',
-        createdAt: DateTime.now(),
-      );
-      _mockTasks.insert(0, model);
-      return model;
+      print('❌ [TaskRemoteDataSource] createTask error: $e');
+      throw Exception('Lỗi tạo nhiệm vụ buồng phòng trên hệ thống: $e');
     }
   }
 }
