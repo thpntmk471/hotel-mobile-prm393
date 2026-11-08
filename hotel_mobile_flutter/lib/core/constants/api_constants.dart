@@ -13,19 +13,19 @@ class ApiConstants {
     return 'http://localhost';
   }
 
-  // Endpoints các Micro-API chuẩn theo dải cổng 5000 -> 5011 của script Backend
-  static String get authService => '$host:5000/api/Auth';
-  static String get staffService => '$host:5001/api/Staff';
-  static String get roomTypeService => '$host:5002/api/RoomType';
-  static String get roomService => '$host:5003/api/Room';
-  static String get guestService => '$host:5004/api/Guest';
-  static String get reservationService => '$host:5005/api/Reservation';
-  static String get stayService => '$host:5006/api/Stay';
-  static String get hotelService => '$host:5007/api/HotelService';
-  static String get serviceUsage => '$host:5008/api/ServiceUsage';
-  static String get taskService => '$host:5009/api/Task';
-  static String get reportService => '$host:5010/api/Report';
-  static String get auditService => '$host:5011/api/Audit';
+  // Endpoints các Micro-API chuẩn xác 100% theo route controller của PRN232 Backend (cổng 5000 -> 5011)
+  static String get authService => '$host:5000/api/auth';
+  static String get staffService => '$host:5001/api/accounts';
+  static String get roomTypeService => '$host:5002/HotelOps/room-types';
+  static String get roomService => '$host:5003/HotelOps/rooms';
+  static String get guestService => '$host:5004/HotelOps/guests';
+  static String get reservationService => '$host:5005/api/reservations';
+  static String get stayService => '$host:5006/api/stays';
+  static String get hotelService => '$host:5007/api/hotel-services';
+  static String get serviceUsage => '$host:5008/api/service-usages';
+  static String get taskService => '$host:5009/api/hotel-tasks';
+  static String get reportService => '$host:5010/api/reports';
+  static String get auditService => '$host:5011/api/auditlogs';
 
   static const int connectTimeoutMs = 15000;
   static const int receiveTimeoutMs = 15000;

@@ -47,5 +47,26 @@ class TaskProvider extends ChangeNotifier {
     await taskRepository.completeTask(taskId);
     await fetchTasks();
   }
+
+  Future<void> createCleaningTask({
+    required int roomId,
+    required String roomNumber,
+    required int floor,
+    required String roomTypeName,
+    String taskType = 'Dọn phòng sau check-out',
+    String priority = 'Cao',
+  }) async {
+    try {
+      await taskRepository.createCleaningTask(
+        roomId: roomId,
+        roomNumber: roomNumber,
+        floor: floor,
+        roomTypeName: roomTypeName,
+        taskType: taskType,
+        priority: priority,
+      );
+      await fetchTasks();
+    } catch (_) {}
+  }
 }
 

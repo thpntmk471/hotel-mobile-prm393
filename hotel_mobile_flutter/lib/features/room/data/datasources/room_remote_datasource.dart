@@ -23,6 +23,7 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       pricePerNight: 450000,
       operationalStatus: 'Hoạt động',
       housekeepingStatus: 'Sạch',
+      capacity: 2,
     ),
     RoomModel(
       id: 2,
@@ -33,6 +34,7 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       pricePerNight: 450000,
       operationalStatus: 'Hoạt động',
       housekeepingStatus: 'Sạch',
+      capacity: 2,
     ),
     RoomModel(
       id: 3,
@@ -43,6 +45,7 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       pricePerNight: 700000,
       operationalStatus: 'Hoạt động',
       housekeepingStatus: 'Cần dọn',
+      capacity: 2,
     ),
     RoomModel(
       id: 4,
@@ -53,6 +56,7 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       pricePerNight: 700000,
       operationalStatus: 'Hoạt động',
       housekeepingStatus: 'Sạch',
+      capacity: 2,
     ),
     RoomModel(
       id: 5,
@@ -63,6 +67,18 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
       pricePerNight: 1100000,
       operationalStatus: 'Hoạt động',
       housekeepingStatus: 'Sạch',
+      capacity: 4,
+    ),
+    RoomModel(
+      id: 6,
+      roomNumber: 'DEV-302',
+      floor: 3,
+      roomTypeId: 3,
+      roomTypeName: 'Phòng Family',
+      pricePerNight: 1100000,
+      operationalStatus: 'Hoạt động',
+      housekeepingStatus: 'Sạch',
+      capacity: 4,
     ),
   ];
 
@@ -70,14 +86,19 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
   Future<List<RoomModel>> fetchRooms() async {
     try {
       final response = await dio.get(ApiConstants.roomService);
-      if (response.data is List) {
-        return (response.data as List)
+      dynamic data = response.data;
+      if (data is Map && (data.containsKey('items') || data.containsKey('Items'))) {
+        data = data['items'] ?? data['Items'];
+      }
+      if (data is List) {
+        return data
             .map((json) => RoomModel.fromJson(json as Map<String, dynamic>))
             .toList();
       }
       return _mockRooms;
-    } catch (_) {
-      // Mock Fallback an toàn khi chưa chạy API Backend
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ [RoomRemoteDataSource] fetchRooms error: $e');
       return _mockRooms;
     }
   }
@@ -85,26 +106,34 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
   @override
   Future<void> updateHousekeepingStatus(int roomId, String newStatus) async {
     try {
-      await dio.put(
-        '${ApiConstants.roomService}/$roomId/housekeeping',
-        data: {'status': newStatus},
+      final hkByte = (newStatus == 'Cần dọn' || newStatus == 'Bẩn') ? 2 : 1;
+      await dio.patch(
+        '${ApiConstants.roomService}/$roomId/status',
+        data: {
+          'housekeepingStatus': hkByte,
+          'rowVersion': '',
+        },
       );
-    } catch (_) {
-      final index = _mockRooms.indexWhere((r) => r.id == roomId);
-      if (index != -1) {
-        final r = _mockRooms[index];
-        _mockRooms[index] = RoomModel(
-          id: r.id,
-          roomNumber: r.roomNumber,
-          floor: r.floor,
-          roomTypeId: r.roomTypeId,
-          roomTypeName: r.roomTypeName,
-          pricePerNight: r.pricePerNight,
-          operationalStatus: r.operationalStatus,
-          housekeepingStatus: newStatus,
-        );
-      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ [RoomRemoteDataSource] updateHousekeepingStatus error: $e');
+    }
+
+    // Luôn cập nhật vào _mockRooms để giao diện và bộ nhớ cục bộ đồng bộ ngay lập tức
+    final index = _mockRooms.indexWhere((r) => r.id == roomId);
+    if (index != -1) {
+      final r = _mockRooms[index];
+      _mockRooms[index] = RoomModel(
+        id: r.id,
+        roomNumber: r.roomNumber,
+        floor: r.floor,
+        roomTypeId: r.roomTypeId,
+        roomTypeName: r.roomTypeName,
+        pricePerNight: r.pricePerNight,
+        operationalStatus: r.operationalStatus,
+        housekeepingStatus: newStatus,
+        capacity: r.capacity,
+      );
     }
   }
 }
-

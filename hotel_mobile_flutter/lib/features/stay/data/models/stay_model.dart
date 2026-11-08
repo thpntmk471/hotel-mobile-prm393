@@ -69,21 +69,38 @@ class StayModel {
 
   factory StayModel.fromJson(Map<String, dynamic> json) {
     var rawLines = json['invoiceLines'] as List? ?? [];
+    final rawId = json['id'] ?? json['Id'] ?? 1;
+    final stayId = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 1;
+    final resId = json['reservationId'] ?? json['ReservationId'] ?? '';
+    final code = json['stayCode'] ?? json['StayCode'] ?? 'STY-2026-$stayId';
+    final rNum = json['roomNumber'] ?? json['RoomNumber'] ?? (json['roomId'] != null ? 'DEV-${json['roomId']}' : 'DEV-101');
+    final typeName = json['roomTypeName'] ?? json['RoomTypeName'] ?? 'Phòng Standard';
+    final gName = json['guestName'] ?? json['GuestName'] ?? 'Khách lưu trú';
+
+    final inTime = DateTime.tryParse(
+            json['checkedInAt']?.toString() ?? json['checkInTime']?.toString() ?? '') ??
+        DateTime.now();
+    final outTimeStr = json['checkedOutAt'] ?? json['checkOutTime'];
+    final outTime = outTimeStr != null ? DateTime.tryParse(outTimeStr.toString()) : null;
+
+    final isActive = json['isActive'] == true || json['IsActive'] == true;
+    final statusStr = isActive ? 'Đang lưu trú' : (json['status']?.toString() ?? 'Đã trả phòng');
+
     return StayModel(
-      id: json['id'] ?? 1,
-      stayCode: json['stayCode'] ?? 'STY-2026-${json['id'] ?? 1}',
-      reservationId: json['reservationId'] ?? 'RSV334E35DF4B',
-      guestName: json['guestName'] ?? 'Khách Test F07',
-      roomNumber: json['roomNumber'] ?? 'DEV-101',
-      roomTypeName: json['roomTypeName'] ?? 'Phòng Standard',
-      checkInTime: DateTime.tryParse(json['checkInTime'] ?? '') ?? DateTime.now(),
-      checkOutTime: json['checkOutTime'] != null ? DateTime.tryParse(json['checkOutTime']) : null,
-      status: json['status'] ?? 'Đang lưu trú',
+      id: stayId,
+      stayCode: code.toString(),
+      reservationId: resId.toString(),
+      guestName: gName.toString(),
+      roomNumber: rNum.toString(),
+      roomTypeName: typeName.toString(),
+      checkInTime: inTime,
+      checkOutTime: outTime,
+      status: statusStr,
       roomTotal: (json['roomTotal'] ?? 900000).toDouble(),
       serviceTotal: (json['serviceTotal'] ?? 150000).toDouble(),
       grandTotal: (json['grandTotal'] ?? 1050000).toDouble(),
-      isPaid: json['isPaid'] ?? false,
-      invoiceLines: rawLines.map((e) => InvoiceLineModel.fromJson(e)).toList(),
+      isPaid: json['isPaid'] ?? !isActive,
+      invoiceLines: rawLines.map((e) => InvoiceLineModel.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
 

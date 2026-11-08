@@ -44,18 +44,28 @@ class ReservationRepositoryImpl implements ReservationRepository {
     final validNights = nights <= 0 ? 1 : nights;
     final total = pricePerNight * validNights;
 
+    final inDateStr =
+        '${checkInDate.year}-${checkInDate.month.toString().padLeft(2, '0')}-${checkInDate.day.toString().padLeft(2, '0')}';
+    final outDateStr =
+        '${checkOutDate.year}-${checkOutDate.month.toString().padLeft(2, '0')}-${checkOutDate.day.toString().padLeft(2, '0')}';
+
     final payload = {
+      // Dữ liệu chuẩn DTO gửi lên .NET Backend (CreateReservationDto)
+      'guestId': 1,
+      'roomId': roomId,
+      'checkInDate': inDateStr,
+      'checkOutDate': outDateStr,
+      'numberOfGuests': numberOfGuests,
+      'notes': 'Khách hàng: $guestName - SĐT: $guestPhone (Mobile App)',
+
+      // Dữ liệu mở rộng để đồng bộ UI và Mock Fallback
       'id': 'RSV${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
       'guestName': guestName,
       'guestPhone': guestPhone,
       'guestIdCard': guestIdCard,
-      'roomId': roomId,
       'roomNumber': roomNumber,
       'roomTypeName': roomTypeName,
       'pricePerNight': pricePerNight,
-      'checkInDate': checkInDate.toIso8601String(),
-      'checkOutDate': checkOutDate.toIso8601String(),
-      'numberOfGuests': numberOfGuests,
       'totalPrice': total,
       'status': 'Đã xác nhận',
       'createdAt': DateTime.now().toIso8601String(),

@@ -60,5 +60,10 @@ class RoomProvider extends ChangeNotifier {
     await roomRepository.updateHousekeepingStatus(room.id, nextStatus);
     await fetchRooms();
   }
+
+  Future<void> setHousekeepingStatus(int roomId, String status) async {
+    await roomRepository.updateHousekeepingStatus(roomId, status);
+    await fetchRooms();
+  }
 }
 

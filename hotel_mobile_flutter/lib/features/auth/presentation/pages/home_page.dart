@@ -20,6 +20,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthProvider>().session;
+    final role = session?.role.toLowerCase() ?? 'receptionist';
+    final isHousekeeping = role.contains('house') || role.contains('room') || role.contains('buồng');
+
     final roomProvider = context.watch<RoomProvider>();
     final reservationProvider = context.watch<ReservationProvider>();
     final stayProvider = context.watch<StayProvider>();
@@ -110,7 +113,7 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            '● ${session?.role ?? "Receptionist"}',
+                            '● ${session?.role ?? (isHousekeeping ? "Buồng phòng" : "Lễ tân")}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -136,7 +139,7 @@ class HomePage extends StatelessWidget {
                             radius: 22,
                             backgroundColor: Colors.white,
                             child: Text(
-                              (session?.fullName ?? 'U')
+                              (session?.fullName.isNotEmpty == true ? session!.fullName : (isHousekeeping ? 'B' : 'L'))
                                   .substring(0, 1)
                                   .toUpperCase(),
                               style: const TextStyle(
@@ -153,7 +156,7 @@ class HomePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Xin chào, ${session?.fullName ?? "Lễ tân Demo"}',
+                                'Xin chào, ${session?.fullName ?? (isHousekeeping ? "Nhân viên Buồng phòng" : "Lễ tân Demo")}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -162,7 +165,9 @@ class HomePage extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Hôm nay, Thứ Sáu • Ca Sáng (07:00 - 15:00)',
+                                isHousekeeping
+                                    ? 'Hôm nay • Ca trực Buồng phòng & Vệ sinh'
+                                    : 'Hôm nay, Thứ Sáu • Ca Sáng (07:00 - 15:00)',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.85),
                                   fontSize: 12,
@@ -252,54 +257,103 @@ class HomePage extends StatelessWidget {
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildQuickAction(
-                          context,
-                          icon: Icons.add_circle,
-                          label: 'Đặt phòng',
-                          color: AppColors.primary,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const BookingPage(),
+                      children: isHousekeeping
+                          ? [
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.cleaning_services,
+                                label: 'Nhiệm vụ dọn',
+                                color: AppColors.primary,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const TaskListPage(),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                        _buildQuickAction(
-                          context,
-                          icon: Icons.login_rounded,
-                          label: 'Nhận phòng',
-                          color: const Color(0xFF2563EB),
-                          onTap: () => onNavigateTab?.call(2),
-                        ),
-                        _buildQuickAction(
-                          context,
-                          icon: Icons.room_service_outlined,
-                          label: 'Gọi dịch vụ',
-                          color: const Color(0xFF7C3AED),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const ServiceCatalogPage(),
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.hotel_outlined,
+                                label: 'Phòng bẩn',
+                                color: const Color(0xFFD97706),
+                                onTap: () => onNavigateTab?.call(1),
                               ),
-                            );
-                          },
-                        ),
-                        _buildQuickAction(
-                          context,
-                          icon: Icons.cleaning_services_outlined,
-                          label: 'Dọn phòng',
-                          color: const Color(0xFF059669),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const TaskListPage(),
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.room_service_outlined,
+                                label: 'Dịch vụ',
+                                color: const Color(0xFF7C3AED),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ServiceCatalogPage(),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ],
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.task_alt,
+                                label: 'Nghiệm thu',
+                                color: const Color(0xFF059669),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const TaskListPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ]
+                          : [
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.add_circle,
+                                label: 'Đặt phòng',
+                                color: AppColors.primary,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const BookingPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.login_rounded,
+                                label: 'Nhận phòng',
+                                color: const Color(0xFF2563EB),
+                                onTap: () => onNavigateTab?.call(2),
+                              ),
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.room_service_outlined,
+                                label: 'Gọi dịch vụ',
+                                color: const Color(0xFF7C3AED),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ServiceCatalogPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              _buildQuickAction(
+                                context,
+                                icon: Icons.cleaning_services_outlined,
+                                label: 'Dọn phòng',
+                                color: const Color(0xFF059669),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const TaskListPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                     ),
                     const SizedBox(height: 24),
 

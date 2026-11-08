@@ -96,8 +96,12 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   Future<List<ReservationModel>> fetchReservations() async {
     try {
       final response = await dio.get(ApiConstants.reservationService);
-      if (response.data is List) {
-        return (response.data as List)
+      dynamic data = response.data;
+      if (data is Map && (data.containsKey('items') || data.containsKey('Items'))) {
+        data = data['items'] ?? data['Items'];
+      }
+      if (data is List) {
+        return data
             .map((e) => ReservationModel.fromJson(e as Map<String, dynamic>))
             .toList();
       }
@@ -124,31 +128,37 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   @override
   Future<void> updateStatus(String reservationId, String newStatus) async {
     try {
-      await dio.put(
-        '${ApiConstants.reservationService}/$reservationId/status',
-        data: {'status': newStatus},
-      );
-    } catch (_) {
-      final idx = _mockReservations.indexWhere((r) => r.id == reservationId);
-      if (idx != -1) {
-        final r = _mockReservations[idx];
-        _mockReservations[idx] = ReservationModel(
-          id: r.id,
-          guestName: r.guestName,
-          guestPhone: r.guestPhone,
-          guestIdCard: r.guestIdCard,
-          roomId: r.roomId,
-          roomNumber: r.roomNumber,
-          roomTypeName: r.roomTypeName,
-          pricePerNight: r.pricePerNight,
-          checkInDate: r.checkInDate,
-          checkOutDate: r.checkOutDate,
-          numberOfGuests: r.numberOfGuests,
-          totalPrice: r.totalPrice,
-          status: newStatus,
-          createdAt: r.createdAt,
+      final idNum = int.tryParse(reservationId);
+      if (idNum != null && (newStatus == 'Đã hủy' || newStatus == 'Cancelled')) {
+        await dio.post(
+          '${ApiConstants.reservationService}/$idNum/cancel',
+          data: {'cancellationReason': 'Khách yêu cầu hủy qua ứng dụng Mobile'},
         );
       }
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ [ReservationRemoteDataSource] updateStatus error: $e');
+    }
+
+    final idx = _mockReservations.indexWhere((r) => r.id == reservationId);
+    if (idx != -1) {
+      final r = _mockReservations[idx];
+      _mockReservations[idx] = ReservationModel(
+        id: r.id,
+        guestName: r.guestName,
+        guestPhone: r.guestPhone,
+        guestIdCard: r.guestIdCard,
+        roomId: r.roomId,
+        roomNumber: r.roomNumber,
+        roomTypeName: r.roomTypeName,
+        pricePerNight: r.pricePerNight,
+        checkInDate: r.checkInDate,
+        checkOutDate: r.checkOutDate,
+        numberOfGuests: r.numberOfGuests,
+        totalPrice: r.totalPrice,
+        status: newStatus,
+        createdAt: r.createdAt,
+      );
     }
   }
 }
