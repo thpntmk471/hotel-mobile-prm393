@@ -39,6 +39,25 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
     try {
       final response = await dio.post(ApiConstants.reservationService, data: payload);
       return ReservationModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      // ignore: avoid_print
+      print('❌ [ReservationRemoteDataSource] createReservation DioException: ${e.response?.statusCode} - ${e.response?.data}');
+      String message = 'Lỗi tạo đơn đặt phòng trên hệ thống.';
+      if (e.response?.data != null) {
+        final d = e.response!.data;
+        if (d is Map) {
+          if (d['message'] != null) {
+            message = d['message'].toString();
+          } else if (d['title'] != null) {
+            message = d['title'].toString();
+          } else if (d['errors'] != null) {
+            message = d['errors'].toString();
+          }
+        } else if (d is String && d.isNotEmpty) {
+          message = d;
+        }
+      }
+      throw Exception(message);
     } catch (e) {
       // ignore: avoid_print
       print('❌ [ReservationRemoteDataSource] createReservation error: $e');

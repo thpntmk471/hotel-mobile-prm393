@@ -59,6 +59,7 @@ class ReservationProvider extends ChangeNotifier {
     required DateTime checkInDate,
     required DateTime checkOutDate,
     required int numberOfGuests,
+    int? createdByAccountId,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -77,6 +78,7 @@ class ReservationProvider extends ChangeNotifier {
         checkInDate: checkInDate,
         checkOutDate: checkOutDate,
         numberOfGuests: numberOfGuests,
+        createdByAccountId: createdByAccountId,
       );
       await fetchReservations();
       return true;

@@ -7,6 +7,7 @@ import '../../../guest/domain/entities/guest.dart';
 import '../../../guest/presentation/providers/guest_provider.dart';
 import '../../../room/domain/entities/room.dart';
 import '../../../room/presentation/providers/room_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/reservation.dart';
 import '../providers/reservation_provider.dart';
 
@@ -724,6 +725,7 @@ class _BookingPageState extends State<BookingPage> {
 
     final resProvider = context.read<ReservationProvider>();
     final guestProvider = context.read<GuestProvider>();
+    final currentUserId = context.read<AuthProvider>().session?.userId ?? 2;
     int? guestId = _selectedGuestId;
 
     // Nếu chưa chọn khách và đang điền form tạo mới
@@ -790,6 +792,7 @@ class _BookingPageState extends State<BookingPage> {
       checkInDate: _checkInDate,
       checkOutDate: _checkOutDate,
       numberOfGuests: _numberOfGuests,
+      createdByAccountId: currentUserId,
     );
 
     if (success && mounted) {

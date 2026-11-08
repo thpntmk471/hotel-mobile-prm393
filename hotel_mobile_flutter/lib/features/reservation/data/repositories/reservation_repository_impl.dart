@@ -40,6 +40,7 @@ class ReservationRepositoryImpl implements ReservationRepository {
     required DateTime checkInDate,
     required DateTime checkOutDate,
     required int numberOfGuests,
+    int? createdByAccountId,
   }) async {
     final inDateStr =
         '${checkInDate.year}-${checkInDate.month.toString().padLeft(2, '0')}-${checkInDate.day.toString().padLeft(2, '0')}';
@@ -47,11 +48,12 @@ class ReservationRepositoryImpl implements ReservationRepository {
         '${checkOutDate.year}-${checkOutDate.month.toString().padLeft(2, '0')}-${checkOutDate.day.toString().padLeft(2, '0')}';
 
     final payload = {
-      'guestId': guestId ?? 1,
+      'guestId': (guestId != null && guestId > 0) ? guestId : 1,
       'roomId': roomId,
       'checkInDate': inDateStr,
       'checkOutDate': outDateStr,
       'numberOfGuests': numberOfGuests,
+      'createdByAccountId': (createdByAccountId != null && createdByAccountId > 0) ? createdByAccountId : 2,
       'notes': 'Khách: $guestName - SĐT: $guestPhone${guestIdCard != null ? ' - CCCD: $guestIdCard' : ''}',
     };
 
