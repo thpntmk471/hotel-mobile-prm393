@@ -74,6 +74,7 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
           '${ApiConstants.reservationService}/$idNum/cancel',
           data: {
             'reason': (reason != null && reason.trim().isNotEmpty) ? reason.trim() : 'Khách yêu cầu hủy qua ứng dụng Mobile',
+            'cancelledByAccountId': 1,
             'rowVersion': rowVersion,
           },
         );
