@@ -173,8 +173,6 @@ class StayProvider extends ChangeNotifier {
         accountId: accountId,
         notes: notes,
       );
-      // Tự động tính lại hóa đơn nháp sau khi thêm dịch vụ
-      await stayRepository.draftInvoice(stayId, accountId);
       await fetchStays();
       return true;
     } catch (e) {

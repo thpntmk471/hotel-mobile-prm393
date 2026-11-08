@@ -733,7 +733,7 @@ class _StayDetailPageState extends State<StayDetailPage> {
 
   Widget _buildServicesCard() {
     final usages = _stay.serviceUsages;
-    final canAdd = _stay.isActive && _stay.invoiceStatus != 2;
+    final canAdd = _stay.isActive && _stay.invoiceId == null;
 
     return Container(
       padding: const EdgeInsets.all(16),

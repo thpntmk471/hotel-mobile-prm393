@@ -260,6 +260,7 @@ class StayRemoteDataSourceImpl implements StayRemoteDataSource {
           'stayId': stayId,
           'hotelServiceId': hotelServiceId,
           'quantity': quantity,
+          'usedAt': DateTime.now().toUtc().toIso8601String(),
           'recordedByAccountId': accountId > 0 ? accountId : 2,
           'notes': notes,
         },
