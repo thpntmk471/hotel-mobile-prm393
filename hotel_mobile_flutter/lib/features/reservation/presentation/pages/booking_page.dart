@@ -116,7 +116,7 @@ class _BookingPageState extends State<BookingPage> {
   // Kiểm tra phòng có bị trùng lịch trong khoảng ngày đã chọn không
   bool _isRoomBookedInDateRange(Room room, List<Reservation> reservations) {
     for (final res in reservations) {
-      if (res.roomId == room.id && res.status != 'Đã hủy') {
+      if (res.roomId == room.id && res.status != 'Đã hủy' && res.status != 'Cancelled') {
         if (_checkInDate.isBefore(res.checkOutDate) && _checkOutDate.isAfter(res.checkInDate)) {
           return true;
         }
@@ -125,9 +125,19 @@ class _BookingPageState extends State<BookingPage> {
     return false;
   }
 
-  // Lọc danh sách phòng theo ĐẦY ĐỦ 4 TIÊU CHÍ: Ngày, Loại phòng, Tầng, Số người
+  // Lọc danh sách phòng theo ĐẦY ĐỦ CÁC TIÊU CHÍ: Trạng thái sẵn sàng, Ngày, Loại phòng, Tầng, Số người
   List<Room> _getFilteredRooms(List<Room> allRooms, List<Reservation> reservations) {
     return allRooms.where((room) {
+      // 0. Phòng BẮT BUỘC phải HOẠT ĐỘNG (không bị tạm khóa / đang bảo trì)
+      if (!room.isActive || room.operationalStatus == 'Tạm khóa') {
+        return false;
+      }
+
+      // 0.1. Phòng BẮT BUỘC phải SẠCH hoặc ĐÃ KIỂM TRA (phòng Cần dọn hoặc Đang dọn KHÔNG THỂ cho khách đặt)
+      if (room.housekeepingStatus != 'Sạch' && room.housekeepingStatus != 'Đã kiểm tra') {
+        return false;
+      }
+
       // 1. Lọc theo số người (Sức chứa tối đa của phòng phải >= số khách yêu cầu)
       if (room.maxGuests < _numberOfGuests) {
         return false;
@@ -845,10 +855,26 @@ class _BookingPageState extends State<BookingPage> {
       });
     }
 
-    // Danh sách các loại phòng có trong khách sạn để tạo chip
+    // Danh sách các loại phòng THỰC SỰ CÓ PHÒNG SẴN SÀNG để đặt (không hiển thị loại phòng hết chỗ/chưa dọn)
+    final bookableRooms = allRooms.where((r) =>
+        r.isActive &&
+        r.operationalStatus != 'Tạm khóa' &&
+        (r.housekeepingStatus == 'Sạch' || r.housekeepingStatus == 'Đã kiểm tra') &&
+        (!_onlyAvailableDates || !_isRoomBookedInDateRange(r, reservations))).toList();
+
     final Set<String> roomTypeOptions = {'Tất cả'};
-    for (final r in allRooms) {
+    for (final r in bookableRooms) {
       roomTypeOptions.add(r.roomTypeName);
+    }
+
+    if (_filterRoomType != 'Tất cả' && !roomTypeOptions.contains(_filterRoomType)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _filterRoomType = 'Tất cả';
+          });
+        }
+      });
     }
 
     return Scaffold(

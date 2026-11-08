@@ -66,10 +66,16 @@ void main() async {
   final roomRemoteDataSource = RoomRemoteDataSourceImpl(dioClient.dio);
   final roomRepository = RoomRepositoryImpl(roomRemoteDataSource);
 
+  final guestRemoteDataSource = GuestRemoteDataSourceImpl(dioClient.dio);
+  final guestRepository = GuestRepositoryImpl(guestRemoteDataSource);
+
   final reservationRemoteDataSource =
       ReservationRemoteDataSourceImpl(dioClient.dio);
-  final reservationRepository =
-      ReservationRepositoryImpl(reservationRemoteDataSource);
+  final reservationRepository = ReservationRepositoryImpl(
+    reservationRemoteDataSource,
+    roomRemoteDataSource: roomRemoteDataSource,
+    guestRemoteDataSource: guestRemoteDataSource,
+  );
 
   final stayRemoteDataSource = StayRemoteDataSourceImpl(dioClient.dio);
   final stayRepository = StayRepositoryImpl(stayRemoteDataSource);
@@ -84,9 +90,6 @@ void main() async {
 
   final roomTypeRemoteDataSource = RoomTypeRemoteDataSourceImpl(dioClient.dio);
   final roomTypeRepository = RoomTypeRepositoryImpl(roomTypeRemoteDataSource);
-
-  final guestRemoteDataSource = GuestRemoteDataSourceImpl(dioClient.dio);
-  final guestRepository = GuestRepositoryImpl(guestRemoteDataSource);
 
   final profileLocalDataSource = ProfileLocalDataSourceImpl(storageService);
   final profileRepository = ProfileRepositoryImpl(profileLocalDataSource);
