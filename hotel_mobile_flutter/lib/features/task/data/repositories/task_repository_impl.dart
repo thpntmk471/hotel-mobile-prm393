@@ -8,39 +8,85 @@ class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<HousekeepingTask>> getTasks({String? status, int? floor}) async {
-    final models = await remoteDataSource.fetchTasks();
-    var list = models.map((m) => m.toEntity()).toList();
-
-    if (status != null && status != 'Tất cả') {
-      list = list.where((t) => t.status == status).toList();
-    }
-    if (floor != null && floor != 0) {
-      list = list.where((t) => t.floor == floor).toList();
-    }
-    return list;
+  Future<List<HousekeepingTask>> getTasks({
+    String? keyword,
+    int? roomId,
+    int? taskType,
+    int? status,
+    int? priority,
+    int? assignedToAccountId,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    final models = await remoteDataSource.fetchTasks(
+      keyword: keyword,
+      roomId: roomId,
+      taskType: taskType,
+      status: status,
+      priority: priority,
+      assignedToAccountId: assignedToAccountId,
+      page: page,
+      pageSize: pageSize,
+    );
+    return models.map((m) => m.toEntity()).toList();
   }
 
   @override
-  Future<void> acceptTask(int taskId, String staffName, {String? rowVersion, int? accountId}) async {
-    await remoteDataSource.updateTaskStatus(
-      taskId,
-      'Đang dọn',
-      staffName: staffName,
-      rowVersion: rowVersion,
-      accountId: accountId,
-    );
+  Future<HousekeepingTask> getTaskById(int id) async {
+    final model = await remoteDataSource.getTaskById(id);
+    return model.toEntity();
   }
 
   @override
-  Future<void> completeTask(int taskId, {String? staffName, String? rowVersion, int? accountId}) async {
-    await remoteDataSource.updateTaskStatus(
-      taskId,
-      'Hoàn thành',
-      staffName: staffName,
-      rowVersion: rowVersion,
-      accountId: accountId,
-    );
+  Future<HousekeepingTask> createHousekeepingTask({
+    required int roomId,
+    required int housekeepingKind,
+    required String title,
+    String? description,
+    int priority = 2,
+    DateTime? dueAt,
+    int? assignedToAccountId,
+    required int createdByAccountId,
+  }) async {
+    final payload = {
+      'roomId': roomId,
+      'housekeepingKind': housekeepingKind,
+      'title': title,
+      'description': description,
+      'priority': priority,
+      'dueAt': dueAt?.toIso8601String(),
+      'assignedToAccountId': assignedToAccountId,
+      'createdByAccountId': createdByAccountId,
+    };
+    final model = await remoteDataSource.createHousekeepingTask(payload);
+    return model.toEntity();
+  }
+
+  @override
+  Future<HousekeepingTask> createMaintenanceTask({
+    required int roomId,
+    required String title,
+    String? description,
+    int priority = 2,
+    DateTime? dueAt,
+    int? assignedToAccountId,
+    DateTime? blockStartAt,
+    DateTime? blockEndAt,
+    required int createdByAccountId,
+  }) async {
+    final payload = {
+      'roomId': roomId,
+      'title': title,
+      'description': description,
+      'priority': priority,
+      'dueAt': dueAt?.toIso8601String(),
+      'assignedToAccountId': assignedToAccountId,
+      'blockStartAt': (blockStartAt ?? DateTime.now()).toIso8601String(),
+      'blockEndAt': blockEndAt?.toIso8601String(),
+      'createdByAccountId': createdByAccountId,
+    };
+    final model = await remoteDataSource.createMaintenanceTask(payload);
+    return model.toEntity();
   }
 
   @override
@@ -49,39 +95,27 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<HousekeepingTask> createCleaningTask({
-    required int roomId,
-    required String roomNumber,
-    required int floor,
-    required String roomTypeName,
-    required String taskType,
-    required String priority,
-    String? description,
-    int? assignedToAccountId,
-    int? createdByAccountId,
-  }) async {
-    int priorityVal = 2;
-    if (priority == 'Khẩn cấp') {
-      priorityVal = 4;
-    } else if (priority == 'Cao') {
-      priorityVal = 3;
-    } else if (priority == 'Thấp') {
-      priorityVal = 1;
-    }
+  Future<void> startTask(int taskId, {String? rowVersion, String? notes}) async {
+    await remoteDataSource.startTask(taskId, rowVersion: rowVersion, notes: notes);
+  }
 
-    final payload = {
-      'roomId': roomId,
-      'roomNumber': roomNumber,
-      'floor': floor,
-      'roomTypeName': roomTypeName,
-      'taskType': taskType,
-      'priority': priorityVal,
-      'description': description,
-      'assignedToAccountId': assignedToAccountId,
-      'createdByAccountId': createdByAccountId,
-    };
-    final model = await remoteDataSource.createTask(payload);
-    return model.toEntity();
+  @override
+  Future<void> cancelTask(int taskId, {String? rowVersion, String? notes}) async {
+    await remoteDataSource.cancelTask(taskId, rowVersion: rowVersion, notes: notes);
+  }
+
+  @override
+  Future<void> completeTask(
+    int taskId, {
+    required int completedByAccountId,
+    String? completionNotes,
+    String? rowVersion,
+  }) async {
+    await remoteDataSource.completeTask(
+      taskId,
+      completedByAccountId: completedByAccountId,
+      completionNotes: completionNotes,
+      rowVersion: rowVersion,
+    );
   }
 }
-

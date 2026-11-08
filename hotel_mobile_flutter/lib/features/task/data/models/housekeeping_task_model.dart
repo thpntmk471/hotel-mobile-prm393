@@ -7,91 +7,127 @@ class HousekeepingTaskModel {
   final String roomNumber;
   final int floor;
   final String roomTypeName;
-  final String taskType;
-  final String priority;
-  final String status;
+  final int taskType;
+  final String taskTypeName;
+  final int? housekeepingKind;
+  final String title;
+  final String description;
+  final int priority;
+  final String priorityName;
+  final int status;
+  final String statusName;
   final String? assignedStaff;
   final int? assignedToAccountId;
-  final String rowVersion;
+  final int createdByAccountId;
+  final DateTime? dueAt;
+  final DateTime? startedAt;
   final DateTime createdAt;
   final DateTime? completedAt;
+  final int? completedByAccountId;
+  final String? completionNotes;
+  final String rowVersion;
 
   HousekeepingTaskModel({
     required this.id,
     required this.taskCode,
     required this.roomId,
-    required this.roomNumber,
-    required this.floor,
-    required this.roomTypeName,
-    required this.taskType,
-    required this.priority,
-    required this.status,
+    this.roomNumber = '',
+    this.floor = 1,
+    this.roomTypeName = '',
+    this.taskType = 1,
+    this.taskTypeName = 'Housekeeping',
+    this.housekeepingKind = 1,
+    required this.title,
+    this.description = '',
+    this.priority = 2,
+    this.priorityName = 'Bình thường',
+    this.status = 1,
+    this.statusName = 'Chờ phân công',
     this.assignedStaff,
     this.assignedToAccountId,
-    this.rowVersion = '',
+    this.createdByAccountId = 1,
+    this.dueAt,
+    this.startedAt,
     required this.createdAt,
     this.completedAt,
+    this.completedByAccountId,
+    this.completionNotes,
+    this.rowVersion = '',
   });
 
   factory HousekeepingTaskModel.fromJson(Map<String, dynamic> json) {
     final rawId = json['id'] ?? json['Id'] ?? 1;
-    final taskId = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 1;
-    final tCode = json['taskCode'] ?? json['TaskCode'] ?? 'DEV-TASK-$taskId';
-    final rId = json['roomId'] ?? json['RoomId'] ?? 1;
-    final rNumber = json['roomNumber'] ?? json['RoomNumber'] ?? 'DEV-$rId';
-    final typeName = json['roomTypeName'] ?? json['RoomTypeName'] ?? 'Phòng Tiêu chuẩn';
-    final tType = json['taskTypeName'] ?? json['title'] ?? json['Title'] ?? 'Dọn dẹp phòng';
-    final rowVer = json['rowVersion'] ?? json['RowVersion'] ?? '';
+    final id = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? 1;
+    final taskCode = (json['taskCode'] ?? json['TaskCode'] ?? 'TSK-$id').toString();
+    final rawRoomId = json['roomId'] ?? json['RoomId'] ?? 1;
+    final roomId = rawRoomId is int ? rawRoomId : int.tryParse(rawRoomId.toString()) ?? 1;
+
+    final rawTaskType = json['taskType'] ?? json['TaskType'] ?? 1;
+    final taskType = rawTaskType is int ? rawTaskType : int.tryParse(rawTaskType.toString()) ?? 1;
+    final taskTypeName = (json['taskTypeName'] ?? json['TaskTypeName'] ?? (taskType == 2 ? 'Maintenance' : 'Housekeeping')).toString();
+
+    final rawHkKind = json['housekeepingKind'] ?? json['HousekeepingKind'];
+    final housekeepingKind = rawHkKind != null ? int.tryParse(rawHkKind.toString()) : null;
+
+    final title = (json['title'] ?? json['Title'] ?? 'Công việc').toString();
+    final description = (json['description'] ?? json['Description'] ?? '').toString();
+
+    final rawPriority = json['priority'] ?? json['Priority'] ?? 2;
+    final priority = rawPriority is int ? rawPriority : int.tryParse(rawPriority.toString()) ?? 2;
+    final priorityName = (json['priorityName'] ?? json['PriorityName'] ?? 'Bình thường').toString();
+
+    final rawStatus = json['status'] ?? json['Status'] ?? 1;
+    final status = rawStatus is int ? rawStatus : int.tryParse(rawStatus.toString()) ?? 1;
+    final statusName = (json['statusName'] ?? json['StatusName'] ?? 'Chờ phân công').toString();
+
     final rawAssignedTo = json['assignedToAccountId'] ?? json['AssignedToAccountId'];
-    final assignedToId = rawAssignedTo is int ? rawAssignedTo : int.tryParse(rawAssignedTo?.toString() ?? '');
+    final assignedToAccountId = rawAssignedTo != null ? int.tryParse(rawAssignedTo.toString()) : null;
 
-    // Ánh xạ trạng thái byte của .NET TaskAPI
-    // 1: Pending (Chờ nhận), 2: Assigned (Đã nhận), 3: InProgress (Đang dọn), 4: Completed (Hoàn thành), 5: Cancelled (Đã hủy)
-    final rawStatus = json['status'] ?? json['Status'] ?? json['statusName'] ?? json['StatusName'];
-    String statusStr = 'Chờ nhận';
-    if (rawStatus is int || (rawStatus != null && int.tryParse(rawStatus.toString()) != null)) {
-      final sInt = rawStatus is int ? rawStatus : int.parse(rawStatus.toString());
-      if (sInt == 1) {
-        statusStr = 'Chờ nhận';
-      } else if (sInt == 2) {
-        statusStr = 'Đã nhận';
-      } else if (sInt == 3) {
-        statusStr = 'Đang dọn';
-      } else if (sInt == 4) {
-        statusStr = 'Hoàn thành';
-      } else if (sInt == 5) {
-        statusStr = 'Đã hủy';
-      }
-    } else if (rawStatus != null) {
-      final s = rawStatus.toString().toLowerCase();
-      if (s.contains('progress') || s.contains('đang')) {
-        statusStr = 'Đang dọn';
-      } else if (s.contains('complet') || s.contains('hoàn')) {
-        statusStr = 'Hoàn thành';
-      } else if (s.contains('assign') || s.contains('nhận')) {
-        statusStr = 'Đã nhận';
-      } else {
-        statusStr = 'Chờ nhận';
-      }
-    }
+    final rawCreatedBy = json['createdByAccountId'] ?? json['CreatedByAccountId'] ?? 1;
+    final createdByAccountId = rawCreatedBy is int ? rawCreatedBy : int.tryParse(rawCreatedBy.toString()) ?? 1;
 
-    final pName = json['priorityName'] ?? json['PriorityName'] ?? 'Trung bình';
+    final dueAt = json['dueAt'] != null ? DateTime.tryParse(json['dueAt'].toString()) : null;
+    final startedAt = json['startedAt'] != null ? DateTime.tryParse(json['startedAt'].toString()) : null;
+    final createdAt = DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now();
+    final completedAt = json['completedAt'] != null ? DateTime.tryParse(json['completedAt'].toString()) : null;
+
+    final rawCompletedBy = json['completedByAccountId'] ?? json['CompletedByAccountId'];
+    final completedByAccountId = rawCompletedBy != null ? int.tryParse(rawCompletedBy.toString()) : null;
+
+    final completionNotes = json['completionNotes']?.toString();
+    final rowVersion = (json['rowVersion'] ?? json['RowVersion'] ?? '').toString();
+
+    final roomNumber = (json['roomNumber'] ?? json['RoomNumber'] ?? 'P$roomId').toString();
+    final floor = json['floor'] ?? json['Floor'] ?? 1;
+    final roomTypeName = (json['roomTypeName'] ?? json['RoomTypeName'] ?? 'Tiêu chuẩn').toString();
+    final assignedStaff = json['assignedStaff']?.toString() ?? json['assignedToName']?.toString();
 
     return HousekeepingTaskModel(
-      id: taskId,
-      taskCode: tCode.toString(),
-      roomId: rId is int ? rId : int.tryParse(rId.toString()) ?? 1,
-      roomNumber: rNumber.toString(),
-      floor: json['floor'] ?? json['Floor'] ?? 2,
-      roomTypeName: typeName.toString(),
-      taskType: tType.toString(),
-      priority: pName.toString(),
-      status: statusStr,
-      assignedStaff: json['assignedStaff']?.toString() ?? json['assignedToName']?.toString(),
-      assignedToAccountId: assignedToId,
-      rowVersion: rowVer.toString(),
-      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
-      completedAt: json['completedAt'] != null ? DateTime.tryParse(json['completedAt'].toString()) : null,
+      id: id,
+      taskCode: taskCode,
+      roomId: roomId,
+      roomNumber: roomNumber,
+      floor: floor is int ? floor : int.tryParse(floor.toString()) ?? 1,
+      roomTypeName: roomTypeName,
+      taskType: taskType,
+      taskTypeName: taskTypeName,
+      housekeepingKind: housekeepingKind,
+      title: title,
+      description: description,
+      priority: priority,
+      priorityName: priorityName,
+      status: status,
+      statusName: statusName,
+      assignedStaff: assignedStaff,
+      assignedToAccountId: assignedToAccountId,
+      createdByAccountId: createdByAccountId,
+      dueAt: dueAt,
+      startedAt: startedAt,
+      createdAt: createdAt,
+      completedAt: completedAt,
+      completedByAccountId: completedByAccountId,
+      completionNotes: completionNotes,
+      rowVersion: rowVersion,
     );
   }
 
@@ -103,12 +139,23 @@ class HousekeepingTaskModel {
         floor: floor,
         roomTypeName: roomTypeName,
         taskType: taskType,
+        taskTypeName: taskTypeName,
+        housekeepingKind: housekeepingKind,
+        title: title,
+        description: description,
         priority: priority,
+        priorityName: priorityName,
         status: status,
+        statusName: statusName,
         assignedStaff: assignedStaff,
         assignedToAccountId: assignedToAccountId,
-        rowVersion: rowVersion,
+        createdByAccountId: createdByAccountId,
+        dueAt: dueAt,
+        startedAt: startedAt,
         createdAt: createdAt,
         completedAt: completedAt,
+        completedByAccountId: completedByAccountId,
+        completionNotes: completionNotes,
+        rowVersion: rowVersion,
       );
 }

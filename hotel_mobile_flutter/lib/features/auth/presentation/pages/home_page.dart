@@ -681,7 +681,7 @@ class HomePage extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    t.status,
+                                    t.displayStatusName,
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
