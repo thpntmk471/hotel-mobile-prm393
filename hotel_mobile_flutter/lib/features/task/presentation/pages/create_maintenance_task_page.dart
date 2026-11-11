@@ -56,14 +56,14 @@ class _CreateMaintenanceTaskPageState extends State<CreateMaintenanceTaskPage> {
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: now.add(const Duration(hours: 2)),
-      firstDate: now.subtract(const Duration(days: 1)),
+      firstDate: DateTime(now.year, now.month, now.day),
       lastDate: now.add(const Duration(days: 30)),
     );
 
     if (pickedDate != null && mounted) {
       final pickedTime = await showTimePicker(
         context: context,
-        initialTime: const TimeOfDay(hour: 17, minute: 0),
+        initialTime: TimeOfDay(hour: (now.hour + 2) % 24, minute: now.minute),
       );
 
       if (pickedTime != null) {
@@ -74,6 +74,23 @@ class _CreateMaintenanceTaskPageState extends State<CreateMaintenanceTaskPage> {
           pickedTime.hour,
           pickedTime.minute,
         );
+
+        if (dt.isBefore(DateTime.now())) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isDue
+                      ? 'Hạn hoàn thành không được ở trong quá khứ!'
+                      : 'Thời gian kết thúc khóa phòng không được ở trong quá khứ!',
+                ),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+          return;
+        }
+
         setState(() {
           if (isDue) {
             _dueAt = dt;
@@ -90,6 +107,26 @@ class _CreateMaintenanceTaskPageState extends State<CreateMaintenanceTaskPage> {
     if (_selectedRoomId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn phòng phát sinh sự cố!'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    if (_dueAt != null && _dueAt!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hạn hoàn thành không thể ở trong quá khứ! Vui lòng cập nhật lại thời gian.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_blockEndAt != null && _blockEndAt!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Thời gian kết thúc khóa phòng không thể ở trong quá khứ!'),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
@@ -254,12 +291,18 @@ class _CreateMaintenanceTaskPageState extends State<CreateMaintenanceTaskPage> {
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _titleController,
+                      maxLength: 150,
                       decoration: const InputDecoration(
                         hintText: 'Nhập tóm tắt sự cố (ví dụ: Hỏng khóa từ cửa)',
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        counterText: '',
                       ),
-                      validator: (val) => (val == null || val.trim().isEmpty) ? 'Vui lòng nhập tiêu đề sự cố' : null,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'Vui lòng nhập tiêu đề sự cố';
+                        if (val.trim().length > 150) return 'Tiêu đề không được vượt quá 150 ký tự';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
 
@@ -267,13 +310,18 @@ class _CreateMaintenanceTaskPageState extends State<CreateMaintenanceTaskPage> {
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _descController,
+                      maxLength: 1000,
                       decoration: const InputDecoration(
-                        hintText: 'Mô tả hiện trạng, vị trí hỏng và thiết bị cần thay thế...',
+                        hintText: 'Mô tả hiện trạng, vị trí hỏng và thiết bị cần thay thế (tối đa 1.000 ký tự)...',
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       maxLines: 3,
-                      validator: (val) => (val == null || val.trim().isEmpty) ? 'Vui lòng mô tả chi tiết lỗi' : null,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'Vui lòng mô tả chi tiết lỗi';
+                        if (val.trim().length > 1000) return 'Mô tả không được vượt quá 1.000 ký tự';
+                        return null;
+                      },
                     ),
                   ],
                 ),

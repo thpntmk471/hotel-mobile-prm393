@@ -194,58 +194,63 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Lưới 4 Thẻ KPI Vận hành
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.35,
-                      children: [
-                        StatMetricCard(
-                          icon: Icons.hotel_outlined,
-                          title: 'Phòng sạch sẵn sàng',
-                          value: '$cleanRooms/$totalRooms',
-                          subtitle: 'Phòng',
-                          iconColor: AppColors.statusActiveText,
-                          iconBgColor: AppColors.statusActiveBg,
-                          onTap: () => onNavigateTab?.call(1),
-                        ),
-                        StatMetricCard(
-                          icon: Icons.pie_chart_outline,
-                          title: 'Tỷ lệ lấp đầy',
-                          value: '$occupancyRate%',
-                          subtitle: '$activeStaysCount phòng ở',
-                          iconColor: const Color(0xFF2563EB),
-                          iconBgColor: const Color(0xFFDBEAFE),
-                          onTap: () => onNavigateTab?.call(3),
-                        ),
-                        StatMetricCard(
-                          icon: Icons.calendar_today_outlined,
-                          title: 'Đơn chờ check-in',
-                          value: '$confirmedBookingsCount đơn',
-                          subtitle: 'Hôm nay',
-                          iconColor: const Color(0xFFD97706),
-                          iconBgColor: const Color(0xFFFEF3C7),
-                          onTap: () => onNavigateTab?.call(2),
-                        ),
-                        StatMetricCard(
-                          icon: Icons.cleaning_services_outlined,
-                          title: 'Cần dọn phòng',
-                          value: '$dirtyRooms phòng',
-                          subtitle: '$pendingTasksCount việc chờ',
-                          iconColor: const Color(0xFFDC2626),
-                          iconBgColor: const Color(0xFFFEE2E2),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const TaskListPage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                    // Lưới 4 Thẻ KPI Vận hành (tự co giãn 4 cột khi xoay ngang)
+                    Builder(
+                      builder: (ctx) {
+                        final isLandscape = MediaQuery.of(ctx).orientation == Orientation.landscape;
+                        return GridView.count(
+                          crossAxisCount: isLandscape ? 4 : 2,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: isLandscape ? 1.45 : 1.35,
+                          children: [
+                            StatMetricCard(
+                              icon: Icons.hotel_outlined,
+                              title: 'Phòng sạch sẵn sàng',
+                              value: '$cleanRooms/$totalRooms',
+                              subtitle: 'Phòng',
+                              iconColor: AppColors.statusActiveText,
+                              iconBgColor: AppColors.statusActiveBg,
+                              onTap: () => onNavigateTab?.call(1),
+                            ),
+                            StatMetricCard(
+                              icon: Icons.pie_chart_outline,
+                              title: 'Tỷ lệ lấp đầy',
+                              value: '$occupancyRate%',
+                              subtitle: '$activeStaysCount phòng ở',
+                              iconColor: const Color(0xFF2563EB),
+                              iconBgColor: const Color(0xFFDBEAFE),
+                              onTap: () => onNavigateTab?.call(3),
+                            ),
+                            StatMetricCard(
+                              icon: Icons.calendar_today_outlined,
+                              title: 'Đơn chờ check-in',
+                              value: '$confirmedBookingsCount đơn',
+                              subtitle: 'Hôm nay',
+                              iconColor: const Color(0xFFD97706),
+                              iconBgColor: const Color(0xFFFEF3C7),
+                              onTap: () => onNavigateTab?.call(2),
+                            ),
+                            StatMetricCard(
+                              icon: Icons.cleaning_services_outlined,
+                              title: 'Cần dọn phòng',
+                              value: '$dirtyRooms phòng',
+                              subtitle: '$pendingTasksCount việc chờ',
+                              iconColor: const Color(0xFFDC2626),
+                              iconBgColor: const Color(0xFFFEE2E2),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const TaskListPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 20),
 

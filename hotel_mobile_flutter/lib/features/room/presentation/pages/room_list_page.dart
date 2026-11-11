@@ -70,12 +70,18 @@ class _RoomListPageState extends State<RoomListPage> {
                   children: [
                     TextFormField(
                       controller: codeCtrl,
+                      maxLength: 20,
                       decoration: InputDecoration(
                         labelText: 'Mã phòng (ví dụ: DEV-104)',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        counterText: '',
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã phòng' : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập mã phòng';
+                        if (v.trim().length > 20) return 'Mã phòng tối đa 20 ký tự';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<int>(
@@ -103,14 +109,20 @@ class _RoomListPageState extends State<RoomListPage> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (v) => (int.tryParse(v ?? '') == null) ? 'Số tầng không hợp lệ' : null,
+                      validator: (v) {
+                        final val = int.tryParse(v?.trim() ?? '');
+                        if (val == null || val <= 0) return 'Số tầng phải là số nguyên dương (> 0)';
+                        if (val > 100) return 'Số tầng không hợp lệ (tối đa 100)';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: descCtrl,
+                      maxLength: 500,
                       decoration: InputDecoration(
                         labelText: 'Mô tả thêm',
-                        hintText: 'Nhập mô tả thêm về phòng...',
+                        hintText: 'Nhập mô tả thêm về phòng (tối đa 500 ký tự)...',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),

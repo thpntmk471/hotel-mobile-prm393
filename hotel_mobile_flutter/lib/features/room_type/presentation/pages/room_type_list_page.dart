@@ -61,22 +61,34 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                 children: [
                   TextFormField(
                     controller: codeCtrl,
+                    maxLength: 20,
                     decoration: InputDecoration(
                       labelText: 'Mã loại phòng (ví dụ: STD, DLX)',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      counterText: '',
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã loại phòng' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Vui lòng nhập mã loại phòng';
+                      if (v.trim().length > 20) return 'Mã loại phòng tối đa 20 ký tự';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: nameCtrl,
+                    maxLength: 100,
                     decoration: InputDecoration(
                       labelText: 'Tên loại phòng (ví dụ: Deluxe Room)',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      counterText: '',
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên loại phòng' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên loại phòng';
+                      if (v.trim().length > 100) return 'Tên loại phòng tối đa 100 ký tự';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -87,7 +99,12 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (v) => (int.tryParse(v ?? '') == null || int.parse(v!) <= 0) ? 'Sức chứa phải lớn hơn 0' : null,
+                    validator: (v) {
+                      final val = int.tryParse(v?.trim() ?? '');
+                      if (val == null || val <= 0) return 'Sức chứa phải là số nguyên dương (> 0)';
+                      if (val > 50) return 'Sức chứa tối đa không vượt quá 50 người';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -98,13 +115,20 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (v) => (double.tryParse(v ?? '') == null || double.parse(v!) <= 0) ? 'Giá phải lớn hơn 0' : null,
+                    validator: (v) {
+                      final val = double.tryParse(v?.trim() ?? '');
+                      if (val == null || val <= 0) return 'Giá phải lớn hơn 0 VNĐ';
+                      if (val > 1000000000) return 'Giá không được vượt quá 1 tỷ VNĐ';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: descCtrl,
+                    maxLength: 500,
                     decoration: InputDecoration(
                       labelText: 'Mô tả ngắn',
+                      hintText: 'Nhập mô tả loại phòng (tối đa 500 ký tự)...',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),

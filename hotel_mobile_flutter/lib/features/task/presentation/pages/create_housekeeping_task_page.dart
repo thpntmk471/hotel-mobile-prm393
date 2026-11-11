@@ -54,8 +54,8 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
     final now = DateTime.now();
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: _dueAt ?? now.add(const Duration(hours: 2)),
-      firstDate: now.subtract(const Duration(days: 1)),
+      initialDate: _dueAt != null && _dueAt!.isAfter(now) ? _dueAt! : now.add(const Duration(hours: 2)),
+      firstDate: DateTime(now.year, now.month, now.day),
       lastDate: now.add(const Duration(days: 30)),
     );
 
@@ -64,18 +64,30 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
         context: context,
         initialTime: _dueAt != null
             ? TimeOfDay(hour: _dueAt!.hour, minute: _dueAt!.minute)
-            : const TimeOfDay(hour: 17, minute: 0),
+            : TimeOfDay(hour: (now.hour + 2) % 24, minute: now.minute),
       );
 
       if (pickedTime != null) {
+        final chosen = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        if (chosen.isBefore(DateTime.now())) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Hạn hoàn thành không được ở trong quá khứ! Vui lòng chọn thời gian sau thời điểm hiện tại.'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+          return;
+        }
         setState(() {
-          _dueAt = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
+          _dueAt = chosen;
         });
       }
     }
@@ -86,6 +98,16 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
     if (_selectedRoomId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn phòng cần xử lý!'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    if (_dueAt != null && _dueAt!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hạn hoàn thành không thể ở trong quá khứ! Vui lòng cập nhật lại thời gian.'),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
@@ -279,12 +301,18 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _titleController,
+                      maxLength: 150,
                       decoration: const InputDecoration(
                         hintText: 'Nhập tiêu đề công việc',
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        counterText: '',
                       ),
-                      validator: (val) => (val == null || val.trim().isEmpty) ? 'Vui lòng nhập tiêu đề' : null,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'Vui lòng nhập tiêu đề';
+                        if (val.trim().length > 150) return 'Tiêu đề không được vượt quá 150 ký tự';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
 
@@ -292,13 +320,18 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _descController,
+                      maxLength: 1000,
                       decoration: const InputDecoration(
-                        hintText: 'Nhập nội dung công việc cần thực hiện...',
+                        hintText: 'Nhập nội dung công việc cần thực hiện (tối đa 1.000 ký tự)...',
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       maxLines: 3,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mô tả công việc' : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Vui lòng nhập mô tả công việc';
+                        if (v.trim().length > 1000) return 'Mô tả không được vượt quá 1.000 ký tự';
+                        return null;
+                      },
                     ),
                   ],
                 ),

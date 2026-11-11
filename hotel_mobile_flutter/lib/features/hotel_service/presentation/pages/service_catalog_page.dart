@@ -139,8 +139,9 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                             ),
                             keyboardType: TextInputType.number,
                             validator: (v) {
-                              final p = double.tryParse(v ?? '');
-                              if (p == null || p < 0) return 'Đơn giá >= 0';
+                              final p = double.tryParse(v?.trim() ?? '');
+                              if (p == null || p < 0) return 'Đơn giá >= 0 VNĐ';
+                              if (p > 500000000) return 'Đơn giá tối đa 500 triệu';
                               return null;
                             },
                           ),
@@ -150,8 +151,10 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: descCtrl,
+                      maxLength: 500,
                       decoration: const InputDecoration(
                         labelText: 'Mô tả chi tiết',
+                        hintText: 'Nhập mô tả dịch vụ (tối đa 500 ký tự)...',
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),

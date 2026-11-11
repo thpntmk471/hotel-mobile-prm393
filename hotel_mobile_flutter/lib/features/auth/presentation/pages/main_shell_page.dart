@@ -114,6 +114,43 @@ class _MainShellPageState extends State<MainShellPage> {
     }
 
     final safeIndex = _currentIndex < pages.length ? _currentIndex : 0;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    if (isLandscape) {
+      // Khi xoay ngang màn hình (Landscape), chuyển sang NavigationRail bên trái
+      // giúp tối đa hóa chiều dọc hiển thị dữ liệu và không bị tràn giao diện
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: safeIndex,
+              onDestinationSelected: _onTabSelected,
+              backgroundColor: Theme.of(context).cardColor,
+              indicatorColor: AppColors.primaryLight,
+              labelType: NavigationRailLabelType.all,
+              leading: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Icon(Icons.hotel_class, color: AppColors.primary, size: 28),
+              ),
+              destinations: destinations.map((d) {
+                return NavigationRailDestination(
+                  icon: d.icon,
+                  selectedIcon: d.selectedIcon ?? d.icon,
+                  label: Text(d.label, style: const TextStyle(fontSize: 11)),
+                );
+              }).toList(),
+            ),
+            const VerticalDivider(thickness: 0.8, width: 1, color: AppColors.border),
+            Expanded(
+              child: IndexedStack(
+                index: safeIndex,
+                children: pages,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: IndexedStack(
