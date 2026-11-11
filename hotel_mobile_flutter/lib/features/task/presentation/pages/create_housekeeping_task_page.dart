@@ -93,12 +93,15 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
     setState(() => _isSubmitting = true);
     final auth = context.read<AuthProvider>();
 
+    final descText = _descController.text.trim();
+    final finalDesc = descText.isNotEmpty ? descText : 'Dọn dẹp và kiểm tra phòng theo yêu cầu';
+
     try {
       final createdTask = await context.read<TaskProvider>().createHousekeepingTask(
         roomId: _selectedRoomId!,
         housekeepingKind: _housekeepingKind,
         title: _titleController.text.trim(),
-        description: _descController.text.trim(),
+        description: finalDesc,
         priority: _priority,
         dueAt: _dueAt,
         assignedToAccountId: _assignedToAccountId,
@@ -280,7 +283,7 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                     ),
                     const SizedBox(height: 14),
 
-                    const Text('Mô tả', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    const Text('Mô tả *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _descController,
@@ -290,6 +293,7 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       ),
                       maxLines: 3,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mô tả công việc' : null,
                     ),
                   ],
                 ),
@@ -303,10 +307,12 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
                         const Text('Mã nhân viên được giao', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(

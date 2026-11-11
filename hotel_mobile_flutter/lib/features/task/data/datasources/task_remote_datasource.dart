@@ -123,6 +123,10 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<HousekeepingTaskModel> createHousekeepingTask(Map<String, dynamic> payload) async {
     try {
+      final desc = (payload['description'] != null && payload['description'].toString().trim().isNotEmpty)
+          ? payload['description'].toString().trim()
+          : (payload['title']?.toString() ?? 'Dọn dẹp và kiểm tra phòng theo yêu cầu');
+
       // Backend: POST /api/hotel-tasks/housekeeping
       final res = await dio.post(
         '${ApiConstants.taskService}/housekeeping',
@@ -130,7 +134,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
           'roomId': payload['roomId'],
           'housekeepingKind': payload['housekeepingKind'] ?? 1, // 1 = Dọn phòng, 2 = Kiểm tra phòng
           'title': payload['title'],
-          'description': payload['description'] ?? '',
+          'description': desc,
           'priority': payload['priority'] ?? 2,
           'dueAt': payload['dueAt'],
           'assignedToAccountId': payload['assignedToAccountId'],
@@ -138,6 +142,29 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
         },
       );
       return HousekeepingTaskModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      // ignore: avoid_print
+      print('❌ [TaskRemoteDataSource] createHousekeepingTask DioException: ${e.response?.data}');
+      String msg = 'Lỗi tạo việc dọn/kiểm tra phòng.';
+      if (e.response?.data != null) {
+        final d = e.response!.data;
+        if (d is Map) {
+          if (d['message'] != null) {
+            msg = d['message'].toString();
+          } else if (d['errors'] != null && d['errors'] is Map) {
+            final errMap = d['errors'] as Map;
+            final firstVal = errMap.values.first;
+            if (firstVal is List && firstVal.isNotEmpty) {
+              msg = firstVal.first.toString();
+            } else {
+              msg = firstVal.toString();
+            }
+          } else if (d['title'] != null) {
+            msg = d['title'].toString();
+          }
+        }
+      }
+      throw Exception(msg);
     } catch (e) {
       // ignore: avoid_print
       print('❌ [TaskRemoteDataSource] createHousekeepingTask error: $e');
@@ -148,13 +175,17 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<HousekeepingTaskModel> createMaintenanceTask(Map<String, dynamic> payload) async {
     try {
+      final desc = (payload['description'] != null && payload['description'].toString().trim().isNotEmpty)
+          ? payload['description'].toString().trim()
+          : (payload['title']?.toString() ?? 'Báo cáo sự cố và bảo trì phòng');
+
       // Backend: POST /api/hotel-tasks/maintenance
       final res = await dio.post(
         '${ApiConstants.taskService}/maintenance',
         data: {
           'roomId': payload['roomId'],
           'title': payload['title'],
-          'description': payload['description'] ?? '',
+          'description': desc,
           'priority': payload['priority'] ?? 2,
           'dueAt': payload['dueAt'],
           'assignedToAccountId': payload['assignedToAccountId'],
@@ -164,6 +195,29 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
         },
       );
       return HousekeepingTaskModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      // ignore: avoid_print
+      print('❌ [TaskRemoteDataSource] createMaintenanceTask DioException: ${e.response?.data}');
+      String msg = 'Lỗi tạo việc bảo trì.';
+      if (e.response?.data != null) {
+        final d = e.response!.data;
+        if (d is Map) {
+          if (d['message'] != null) {
+            msg = d['message'].toString();
+          } else if (d['errors'] != null && d['errors'] is Map) {
+            final errMap = d['errors'] as Map;
+            final firstVal = errMap.values.first;
+            if (firstVal is List && firstVal.isNotEmpty) {
+              msg = firstVal.first.toString();
+            } else {
+              msg = firstVal.toString();
+            }
+          } else if (d['title'] != null) {
+            msg = d['title'].toString();
+          }
+        }
+      }
+      throw Exception(msg);
     } catch (e) {
       // ignore: avoid_print
       print('❌ [TaskRemoteDataSource] createMaintenanceTask error: $e');
