@@ -13,6 +13,8 @@ import '../../../stay/presentation/pages/stay_detail_page.dart';
 import '../../../stay/presentation/providers/stay_provider.dart';
 import '../../../task/presentation/pages/task_list_page.dart';
 import '../../../task/presentation/providers/task_provider.dart';
+import '../../../audit_log/presentation/pages/audit_log_list_page.dart';
+import '../../../report/presentation/pages/report_overview_page.dart';
 import '../providers/auth_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -24,6 +26,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<AuthProvider>().session;
     final role = session?.role.toLowerCase() ?? 'receptionist';
+    final isAdmin = role.contains('admin');
     final isHousekeeping = role.contains('house') || role.contains('room') || role.contains('buồng');
 
     final roomProvider = context.watch<RoomProvider>();
@@ -429,6 +432,52 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (isAdmin) ...[
+                      const SizedBox(height: 20),
+                      const Text(
+                        'QUẢN TRỊ HỆ THỐNG',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildAdminBannerCard(
+                              context,
+                              icon: Icons.analytics_outlined,
+                              title: 'Báo cáo tổng hợp',
+                              subtitle: 'Doanh thu & công suất',
+                              color: const Color(0xFF176B62),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const ReportOverviewPage()),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildAdminBannerCard(
+                              context,
+                              icon: Icons.history_edu_outlined,
+                              title: 'Nhật ký hoạt động',
+                              subtitle: 'Audit log hệ thống',
+                              color: const Color(0xFF2563EB),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const AuditLogListPage()),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 24),
 
                     // Mục: Khách đang lưu trú
@@ -697,6 +746,73 @@ class HomePage extends StatelessWidget {
                         );
                       }),
                     const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminBannerCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),

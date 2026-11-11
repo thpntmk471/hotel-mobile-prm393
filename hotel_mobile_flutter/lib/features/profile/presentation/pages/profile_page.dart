@@ -7,6 +7,8 @@ import '../../../room/presentation/pages/room_list_page.dart';
 import '../../../room_type/presentation/pages/room_type_list_page.dart';
 import '../../../staff/presentation/pages/staff_list_page.dart';
 import '../../../task/presentation/pages/task_list_page.dart';
+import '../../../audit_log/presentation/pages/audit_log_list_page.dart';
+import '../../../report/presentation/pages/report_overview_page.dart';
 import '../providers/profile_provider.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -35,7 +37,8 @@ class ProfilePage extends StatelessWidget {
 
     String department = 'Bộ phận Lễ tân & Tiền sảnh';
     final lowerRole = role.toLowerCase();
-    if (lowerRole.contains('admin')) {
+    final isAdmin = lowerRole.contains('admin');
+    if (isAdmin) {
       department = 'Ban Quản trị & Điều hành Khách sạn';
     } else if (lowerRole.contains('house') || lowerRole.contains('buồng') || lowerRole.contains('room')) {
       department = 'Bộ phận Quản lý Buồng phòng';
@@ -255,23 +258,66 @@ class ProfilePage extends StatelessWidget {
                       );
                     },
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.badge_outlined, color: Color(0xFF6366F1)),
-                    title: const Text('Quản lý Nhân Viên (Staff)'),
-                    subtitle: const Text('Tài khoản, vai trò và trạng thái nhân viên'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const StaffListPage()),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
+
+            // Mục: Quản trị hệ thống (Chỉ Admin)
+            if (isAdmin) ...[
+              _buildSectionHeader('QUẢN TRỊ HỆ THỐNG (CHỈ ADMIN)'),
+              Material(
+                color: Theme.of(context).cardColor,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.border),
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.analytics_outlined, color: Color(0xFF176B62)),
+                      title: const Text('Báo cáo tổng hợp (Reports)'),
+                      subtitle: const Text('Thống kê phòng, đặt phòng, doanh thu & công việc'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ReportOverviewPage()),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.history_edu_outlined, color: Color(0xFF2563EB)),
+                      title: const Text('Nhật ký hoạt động (Audit Logs)'),
+                      subtitle: const Text('Theo dõi biến động và lịch sử thao tác hệ thống'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AuditLogListPage()),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.badge_outlined, color: Color(0xFF6366F1)),
+                      title: const Text('Quản lý Nhân Viên (Staff)'),
+                      subtitle: const Text('Tài khoản, vai trò và trạng thái nhân viên'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const StaffListPage()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Mục: Thông tin liên hệ
             _buildSectionHeader('THÔNG TIN LIÊN HỆ'),

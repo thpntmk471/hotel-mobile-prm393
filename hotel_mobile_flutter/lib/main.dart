@@ -48,6 +48,14 @@ import 'features/staff/data/datasources/staff_remote_datasource.dart';
 import 'features/staff/data/repositories/staff_repository_impl.dart';
 import 'features/staff/domain/repositories/staff_repository.dart';
 import 'features/staff/presentation/providers/staff_provider.dart';
+import 'features/audit_log/data/datasources/audit_log_remote_datasource.dart';
+import 'features/audit_log/data/repositories/audit_log_repository_impl.dart';
+import 'features/audit_log/domain/repositories/audit_log_repository.dart';
+import 'features/audit_log/presentation/providers/audit_log_provider.dart';
+import 'features/report/data/datasources/report_remote_datasource.dart';
+import 'features/report/data/repositories/report_repository_impl.dart';
+import 'features/report/domain/repositories/report_repository.dart';
+import 'features/report/presentation/providers/report_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -106,6 +114,12 @@ void main() async {
   final profileLocalDataSource = ProfileLocalDataSourceImpl(storageService);
   final profileRepository = ProfileRepositoryImpl(profileLocalDataSource);
 
+  final auditLogRemoteDataSource = AuditLogRemoteDataSourceImpl(dioClient.dio);
+  final auditLogRepository = AuditLogRepositoryImpl(auditLogRemoteDataSource);
+
+  final reportRemoteDataSource = ReportRemoteDataSourceImpl(dioClient.dio);
+  final reportRepository = ReportRepositoryImpl(reportRemoteDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -121,6 +135,8 @@ void main() async {
         Provider<GuestRepository>.value(value: guestRepository),
         Provider<StaffRepository>.value(value: staffRepository),
         Provider<ProfileRepository>.value(value: profileRepository),
+        Provider<AuditLogRepository>.value(value: auditLogRepository),
+        Provider<ReportRepository>.value(value: reportRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authRepository: authRepository),
         ),
@@ -152,6 +168,12 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => ProfileProvider(profileRepository: profileRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AuditLogProvider(repository: auditLogRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReportProvider(repository: reportRepository),
         ),
       ],
       child: const HotelManagementApp(),
