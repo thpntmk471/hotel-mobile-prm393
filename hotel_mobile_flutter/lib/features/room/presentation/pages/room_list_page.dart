@@ -54,55 +54,88 @@ class _RoomListPageState extends State<RoomListPage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(isEdit ? 'Sửa thông tin phòng' : 'Thêm phòng mới'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: codeCtrl,
-                    decoration: const InputDecoration(labelText: 'Mã phòng (ví dụ: DEV-104)'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã phòng' : null,
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButtonFormField<int>(
-                    initialValue: selectedRoomTypeId,
-                    decoration: const InputDecoration(labelText: 'Loại phòng'),
-                    items: const [
-                      DropdownMenuItem(value: 1, child: Text('Phòng Standard (1)')),
-                      DropdownMenuItem(value: 2, child: Text('Phòng Deluxe (2)')),
-                      DropdownMenuItem(value: 3, child: Text('Phòng VIP Suite (3)')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setDialogState(() => selectedRoomTypeId = val);
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: floorCtrl,
-                    decoration: const InputDecoration(labelText: 'Số tầng (1, 2, 3...)'),
-                    keyboardType: TextInputType.number,
-                    validator: (v) => (int.tryParse(v ?? '') == null) ? 'Số tầng không hợp lệ' : null,
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: descCtrl,
-                    decoration: const InputDecoration(labelText: 'Mô tả thêm'),
-                    maxLines: 2,
-                  ),
-                ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          title: Text(
+            isEdit ? 'Sửa thông tin phòng' : 'Thêm phòng mới',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: SizedBox(
+            width: 440,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: codeCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Mã phòng (ví dụ: DEV-104)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã phòng' : null,
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedRoomTypeId,
+                      decoration: InputDecoration(
+                        labelText: 'Loại phòng',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 1, child: Text('Phòng Standard (1)')),
+                        DropdownMenuItem(value: 2, child: Text('Phòng Deluxe (2)')),
+                        DropdownMenuItem(value: 3, child: Text('Phòng VIP Suite (3)')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => selectedRoomTypeId = val);
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: floorCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Số tầng (1, 2, 3...)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => (int.tryParse(v ?? '') == null) ? 'Số tầng không hợp lệ' : null,
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: descCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Mô tả thêm',
+                        hintText: 'Nhập mô tả thêm về phòng...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () async {
                 if (formKey.currentState?.validate() ?? false) {
                   final provider = context.read<RoomProvider>();

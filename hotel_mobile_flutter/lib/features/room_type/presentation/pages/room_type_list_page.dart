@@ -45,55 +45,91 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isEdit ? 'Cập nhật loại phòng' : 'Thêm loại phòng mới'),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: codeCtrl,
-                  decoration: const InputDecoration(labelText: 'Mã loại phòng (ví dụ: STD, DLX)'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã loại phòng' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Tên loại phòng (ví dụ: Deluxe Room)'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên loại phòng' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: capCtrl,
-                  decoration: const InputDecoration(labelText: 'Sức chứa tối đa (người)'),
-                  keyboardType: TextInputType.number,
-                  validator: (v) => (int.tryParse(v ?? '') == null || int.parse(v!) <= 0) ? 'Sức chứa phải lớn hơn 0' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: priceCtrl,
-                  decoration: const InputDecoration(labelText: 'Giá niêm yết mỗi đêm (VNĐ)'),
-                  keyboardType: TextInputType.number,
-                  validator: (v) => (double.tryParse(v ?? '') == null || double.parse(v!) <= 0) ? 'Giá phải lớn hơn 0' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: descCtrl,
-                  decoration: const InputDecoration(labelText: 'Mô tả ngắn'),
-                  maxLines: 2,
-                ),
-              ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        title: Text(
+          isEdit ? 'Cập nhật loại phòng' : 'Thêm loại phòng mới',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        content: SizedBox(
+          width: 440,
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: codeCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Mã loại phòng (ví dụ: STD, DLX)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập mã loại phòng' : null,
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Tên loại phòng (ví dụ: Deluxe Room)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên loại phòng' : null,
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: capCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Sức chứa tối đa (người)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => (int.tryParse(v ?? '') == null || int.parse(v!) <= 0) ? 'Sức chứa phải lớn hơn 0' : null,
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: priceCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Giá niêm yết mỗi đêm (VNĐ)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => (double.tryParse(v ?? '') == null || double.parse(v!) <= 0) ? 'Giá phải lớn hơn 0' : null,
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: descCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Mô tả ngắn',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () async {
               if (formKey.currentState?.validate() ?? false) {
                 final provider = context.read<RoomTypeProvider>();
