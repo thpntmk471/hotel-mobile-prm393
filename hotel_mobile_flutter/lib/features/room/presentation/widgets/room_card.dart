@@ -146,6 +146,8 @@ class RoomCard extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (onEdit != null || onDelete != null)

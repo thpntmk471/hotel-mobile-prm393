@@ -597,42 +597,52 @@ class _StaffListPageState extends State<StaffListPage> {
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: _getRoleBgColor(s.displayRole),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        s.displayRole,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: _getRoleColor(s.displayRole),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: _getRoleBgColor(s.displayRole),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            s.displayRole,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: _getRoleColor(s.displayRole),
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: s.isActive ? AppColors.statusActiveBg : AppColors.statusOccupiedBg,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            s.isActive ? 'Hoạt động' : 'Vô hiệu hóa',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: s.isActive ? AppColors.statusActiveText : AppColors.statusOccupiedText,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: s.isActive ? AppColors.statusActiveBg : AppColors.statusOccupiedBg,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
+                                    Flexible(
                                       child: Text(
-                                        s.isActive ? 'Hoạt động' : 'Vô hiệu hóa',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: s.isActive ? AppColors.statusActiveText : AppColors.statusOccupiedText,
-                                        ),
+                                        _formatDateTime(s.createdAt),
+                                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      _formatDateTime(s.createdAt),
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
                                     ),
                                   ],
                                 ),

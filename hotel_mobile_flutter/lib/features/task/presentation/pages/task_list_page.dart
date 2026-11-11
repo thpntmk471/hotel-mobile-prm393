@@ -525,13 +525,15 @@ class _TaskListPageState extends State<TaskListPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Row(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 4,
                       children: [
                         Text(
                           task.taskCode,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: AppColors.primary),
                         ),
-                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
@@ -584,32 +586,38 @@ class _TaskListPageState extends State<TaskListPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: priorityColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          task.displayPriorityName,
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: priorityColor),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
-                          const SizedBox(width: 3),
-                          Text(
-                            staffDisplay,
-                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  Expanded(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: priorityColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                        ],
-                      ),
-                    ],
+                          child: Text(
+                            task.displayPriorityName,
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: priorityColor),
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                            const SizedBox(width: 3),
+                            Text(
+                              staffDisplay,
+                              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 6),
 
                   // Nút thao tác nhanh hoặc xem Chi tiết
                   Row(

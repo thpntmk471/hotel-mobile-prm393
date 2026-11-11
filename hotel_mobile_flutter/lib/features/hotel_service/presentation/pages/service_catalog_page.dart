@@ -462,7 +462,10 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 4,
+                                          crossAxisAlignment: WrapCrossAlignment.center,
                                           children: [
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -479,7 +482,6 @@ class _ServiceCatalogPageState extends State<ServiceCatalogPage> {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(

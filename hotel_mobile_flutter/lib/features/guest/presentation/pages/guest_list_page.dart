@@ -300,40 +300,46 @@ class _GuestListPageState extends State<GuestListPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: AppColors.primaryLight,
-                                      child: Text(
-                                        guest.fullName.isNotEmpty
-                                            ? guest.fullName.substring(0, 1).toUpperCase()
-                                            : 'G',
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          guest.fullName,
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 18,
+                                        backgroundColor: AppColors.primaryLight,
+                                        child: Text(
+                                          guest.fullName.isNotEmpty
+                                              ? guest.fullName.substring(0, 1).toUpperCase()
+                                              : 'G',
                                           style: const TextStyle(
-                                            fontSize: 16,
+                                            color: AppColors.primary,
                                             fontWeight: FontWeight.bold,
-                                            color: AppColors.textPrimary,
                                           ),
                                         ),
-                                        Text(
-                                          'Mã KH: #${guest.id}',
-                                          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              guest.fullName,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              'Mã KH: #${guest.id}',
+                                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 PopupMenuButton<String>(
                                   icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),

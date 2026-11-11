@@ -228,10 +228,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             children: [
               Text('Phân công cho công việc ${task.taskCode}:'),
               const SizedBox(height: 12),
-              Row(
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 4,
                 children: [
                   const Text('Chọn nhân viên:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  const SizedBox(width: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(

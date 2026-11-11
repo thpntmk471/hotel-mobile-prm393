@@ -473,6 +473,7 @@ class _AuditLogListPageState extends State<AuditLogListPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
                   const SizedBox(width: 4),
@@ -486,15 +487,23 @@ class _AuditLogListPageState extends State<AuditLogListPage> {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${item.actorUsernameSnapshot ?? "system"}${item.actorAccountId != null ? " (ID: ${item.actorAccountId})" : ""}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ],
+              const SizedBox(width: 8),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        '${item.actorUsernameSnapshot ?? "system"}${item.actorAccountId != null ? " (ID: ${item.actorAccountId})" : ""}',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
