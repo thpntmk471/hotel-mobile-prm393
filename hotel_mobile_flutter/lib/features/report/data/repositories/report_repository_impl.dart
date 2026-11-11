@@ -32,3 +32,4 @@ class ReportRepositoryImpl implements ReportRepository {
     return remoteDataSource.fetchTaskReport(fromDate, toDate);
   }
 }
+

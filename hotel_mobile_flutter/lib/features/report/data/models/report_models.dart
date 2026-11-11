@@ -269,3 +269,4 @@ class ComprehensiveReportModel {
     required this.generatedAt,
   });
 }
+

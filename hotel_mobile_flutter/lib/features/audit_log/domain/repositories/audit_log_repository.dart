@@ -15,3 +15,4 @@ abstract class AuditLogRepository {
 
   Future<AuditLogItem> getAuditLogById(int id);
 }
+

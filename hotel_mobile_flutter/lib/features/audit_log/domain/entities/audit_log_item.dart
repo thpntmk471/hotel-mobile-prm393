@@ -47,3 +47,4 @@ class AuditLogPage {
     required this.hasNextPage,
   });
 }
+

@@ -39,3 +39,4 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
     return model.toEntity();
   }
 }
+

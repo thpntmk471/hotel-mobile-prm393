@@ -55,3 +55,4 @@ class ReportProvider extends ChangeNotifier {
     loadReport();
   }
 }
+
