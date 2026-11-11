@@ -1116,30 +1116,33 @@ class _BookingPageState extends State<BookingPage> {
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        for (final floor in [0, 1, 2, 3])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: ChoiceChip(
-                              label: Text(floor == 0 ? 'Tất cả tầng' : 'Tầng $floor'),
-                              selected: _filterFloor == floor,
-                              onSelected: (sel) {
-                                if (sel) {
-                                  setState(() {
-                                    _filterFloor = floor;
-                                  });
-                                }
-                              },
-                              selectedColor: AppColors.primary,
-                              labelStyle: TextStyle(
-                                color: _filterFloor == floor ? Colors.white : AppColors.textPrimary,
-                                fontWeight: _filterFloor == floor ? FontWeight.bold : FontWeight.normal,
-                                fontSize: 11,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (final floor in [0, 1, 2, 3])
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ChoiceChip(
+                                label: Text(floor == 0 ? 'Tất cả tầng' : 'Tầng $floor'),
+                                selected: _filterFloor == floor,
+                                onSelected: (sel) {
+                                  if (sel) {
+                                    setState(() {
+                                      _filterFloor = floor;
+                                    });
+                                  }
+                                },
+                                selectedColor: AppColors.primary,
+                                labelStyle: TextStyle(
+                                  color: _filterFloor == floor ? Colors.white : AppColors.textPrimary,
+                                  fontWeight: _filterFloor == floor ? FontWeight.bold : FontWeight.normal,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     // 5. Tùy chọn lọc phòng trống theo ngày
@@ -1204,40 +1207,45 @@ class _BookingPageState extends State<BookingPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Text(
-                              'PHÒNG ĐÃ CHỌN',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${filteredRooms.length} phòng khả dụng',
-                                style: const TextStyle(
-                                  fontSize: 10,
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              const Text(
+                                'PHÒNG ĐÃ CHỌN',
+                                style: TextStyle(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                                  letterSpacing: 0.8,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
-                            ),
-                          ],
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${filteredRooms.length} khả dụng',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         InkWell(
                           onTap: () => _showRoomSelectionModal(filteredRooms, reservations),
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                             decoration: BoxDecoration(
                               color: AppColors.primaryLight,
                               borderRadius: BorderRadius.circular(8),
@@ -1248,7 +1256,7 @@ class _BookingPageState extends State<BookingPage> {
                                 Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Xem tất cả phòng',
+                                  'Xem tất cả',
                                   style: TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,
@@ -1280,29 +1288,31 @@ class _BookingPageState extends State<BookingPage> {
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.hotel, color: Colors.white, size: 24),
+                                child: const Icon(Icons.hotel, color: Colors.white, size: 22),
                               ),
-                              const SizedBox(width: 14),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
+                                    Wrap(
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      spacing: 6,
+                                      runSpacing: 4,
                                       children: [
                                         Text(
                                           'Phòng ${_selectedRoom!.roomNumber}',
                                           style: const TextStyle(
-                                            fontSize: 17,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: AppColors.textPrimary,
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 6,
@@ -1338,19 +1348,21 @@ class _BookingPageState extends State<BookingPage> {
                                   ],
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     '${_formatCurrency(_selectedRoom!.pricePerNight)}/đêm',
                                     style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
+                                  const Icon(Icons.keyboard_arrow_down, color: AppColors.primary, size: 20),
                                 ],
                               ),
                             ],
