@@ -247,6 +247,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               const SizedBox(height: 6),
               DropdownButtonFormField<int>(
                 initialValue: chosenStaffId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -255,7 +256,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 items: roomStaff.map((s) {
                   return DropdownMenuItem<int>(
                     value: s.id,
-                    child: Text('${s.fullName} (${s.username}) - #${s.id}'),
+                    child: Text(
+                      '${s.fullName} (${s.username}) - #${s.id}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {

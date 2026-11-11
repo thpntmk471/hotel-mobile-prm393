@@ -186,6 +186,7 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                     const SizedBox(height: 6),
                     DropdownButtonFormField<int>(
                       initialValue: _selectedRoomId,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -194,7 +195,11 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                       items: rooms.map((r) {
                         return DropdownMenuItem<int>(
                           value: r.id,
-                          child: Text('Phòng ${r.roomNumber} (${r.roomTypeName}) - ${r.housekeepingStatus}'),
+                          child: Text(
+                            'Phòng ${r.roomNumber} (${r.roomTypeName}) - ${r.housekeepingStatus}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         );
                       }).toList(),
                       onChanged: (val) {
@@ -326,6 +331,7 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                     const SizedBox(height: 6),
                     DropdownButtonFormField<int?>(
                       initialValue: _assignedToAccountId,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -338,7 +344,11 @@ class _CreateHousekeepingTaskPageState extends State<CreateHousekeepingTaskPage>
                         ...roomStaffList.map((s) {
                           return DropdownMenuItem<int?>(
                             value: s.id,
-                            child: Text('${s.fullName} (${s.username}) - #${s.id}'),
+                            child: Text(
+                              '${s.fullName} (${s.username}) - #${s.id}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           );
                         }),
                       ],
