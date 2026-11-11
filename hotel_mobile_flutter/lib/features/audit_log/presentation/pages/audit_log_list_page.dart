@@ -190,34 +190,6 @@ class _AuditLogListPageState extends State<AuditLogListPage> {
               ),
               const SizedBox(height: 14),
 
-              // Success Banner
-              if (!provider.isLoading && provider.errorMessage == null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFA5D6A7)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_outline, color: Color(0xFF2E7D32), size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'AuditAPI HTTP 200; nhận ${provider.items.length} dòng; tổng ${provider.totalCount} bản ghi.',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1B5E20),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
               // Error Banner
               if (provider.errorMessage != null)
                 Container(
