@@ -19,7 +19,7 @@ class RoomListPage extends StatefulWidget {
 class _RoomListPageState extends State<RoomListPage> {
   final _searchController = TextEditingController();
 
-  final List<String> _roomTypes = ['Tất cả', 'Phòng Standard', 'Phòng Deluxe', 'Phòng VIP Suite'];
+  final List<String> _roomTypes = ['Tất cả', 'Phòng Standard', 'Phòng Deluxe', 'Phòng Family', 'Phòng VIP Suite'];
   final List<String> _housekeepingStatuses = [
     'Tất cả',
     'Sạch',
@@ -88,7 +88,7 @@ class _RoomListPageState extends State<RoomListPage> {
                       items: const [
                         DropdownMenuItem(value: 1, child: Text('Phòng Standard (1)')),
                         DropdownMenuItem(value: 2, child: Text('Phòng Deluxe (2)')),
-                        DropdownMenuItem(value: 3, child: Text('Phòng VIP Suite (3)')),
+                        DropdownMenuItem(value: 3, child: Text('Phòng Family (3)')),
                       ],
                       onChanged: (val) {
                         if (val != null) setDialogState(() => selectedRoomTypeId = val);

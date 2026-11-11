@@ -16,7 +16,10 @@ class ReservationRemoteDataSourceImpl implements ReservationRemoteDataSource {
   @override
   Future<List<ReservationModel>> fetchReservations() async {
     try {
-      final response = await dio.get(ApiConstants.reservationService);
+      final response = await dio.get(
+        ApiConstants.reservationService,
+        queryParameters: {'pageSize': 100},
+      );
       dynamic data = response.data;
       if (data is Map && (data.containsKey('items') || data.containsKey('Items'))) {
         data = data['items'] ?? data['Items'];

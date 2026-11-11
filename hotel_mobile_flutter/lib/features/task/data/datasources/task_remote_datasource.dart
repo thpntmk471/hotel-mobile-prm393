@@ -84,6 +84,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       if (assignedToAccountId != null && assignedToAccountId > 0) {
         queryParams['assignedToAccountId'] = assignedToAccountId;
       }
+      queryParams['pageSize'] = 100;
 
       final res = await dio.get(
         ApiConstants.taskService,

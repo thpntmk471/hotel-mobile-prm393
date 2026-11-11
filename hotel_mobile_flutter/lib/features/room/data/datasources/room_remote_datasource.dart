@@ -18,17 +18,36 @@ class RoomRemoteDataSourceImpl implements RoomRemoteDataSource {
   @override
   Future<List<RoomModel>> fetchRooms() async {
     try {
-      final response = await dio.get(ApiConstants.roomService);
-      dynamic data = response.data;
-      if (data is Map && (data.containsKey('items') || data.containsKey('Items'))) {
-        data = data['items'] ?? data['Items'];
-      }
-      if (data is List) {
-        return data
-            .map((json) => RoomModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-      return [];
+      final List<RoomModel> allRooms = [];
+      int currentPage = 1;
+      int totalPages = 1;
+
+      do {
+        final response = await dio.get(
+          ApiConstants.roomService,
+          queryParameters: {
+            'page': currentPage,
+            'pageSize': 100,
+          },
+        );
+        dynamic data = response.data;
+        if (data is Map) {
+          totalPages = (data['totalPages'] ?? data['TotalPages'] ?? 1) as int;
+          if (data.containsKey('items') || data.containsKey('Items')) {
+            data = data['items'] ?? data['Items'];
+          }
+        }
+        if (data is List) {
+          allRooms.addAll(
+            data.map((json) => RoomModel.fromJson(json as Map<String, dynamic>)),
+          );
+        } else {
+          break;
+        }
+        currentPage++;
+      } while (currentPage <= totalPages);
+
+      return allRooms;
     } catch (e) {
       // ignore: avoid_print
       print('❌ [RoomRemoteDataSource] fetchRooms error: $e');

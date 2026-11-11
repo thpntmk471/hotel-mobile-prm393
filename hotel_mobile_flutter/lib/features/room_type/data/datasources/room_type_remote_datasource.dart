@@ -17,7 +17,10 @@ class RoomTypeRemoteDataSourceImpl implements RoomTypeRemoteDataSource {
   @override
   Future<List<RoomTypeModel>> fetchRoomTypes() async {
     try {
-      final res = await dio.get(ApiConstants.roomTypeService);
+      final res = await dio.get(
+        ApiConstants.roomTypeService,
+        queryParameters: {'pageSize': 100},
+      );
       List items = [];
       if (res.data is Map<String, dynamic>) {
         final map = res.data as Map<String, dynamic>;

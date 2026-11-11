@@ -18,7 +18,10 @@ class HotelServiceRemoteDataSourceImpl implements HotelServiceRemoteDataSource {
 
   @override
   Future<List<HotelServiceItemModel>> fetchServices() async {
-    final res = await dio.get(ApiConstants.hotelService);
+    final res = await dio.get(
+      ApiConstants.hotelService,
+      queryParameters: {'pageSize': 100},
+    );
     final raw = res.data;
     List items = [];
     if (raw is List) {

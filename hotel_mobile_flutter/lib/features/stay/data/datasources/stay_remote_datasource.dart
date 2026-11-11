@@ -36,7 +36,10 @@ class StayRemoteDataSourceImpl implements StayRemoteDataSource {
   @override
   Future<List<StayModel>> fetchStays() async {
     try {
-      final res = await dio.get(ApiConstants.stayService);
+      final res = await dio.get(
+        ApiConstants.stayService,
+        queryParameters: {'pageSize': 100},
+      );
       dynamic data = res.data;
       if (data is Map && (data.containsKey('items') || data.containsKey('Items'))) {
         data = data['items'] ?? data['Items'];
